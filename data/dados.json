@@ -1,5 +1,5 @@
 {
- "versao": 5,
+ "versao": 6,
  "ministerio": "Nova Kids e Infantil",
  "secoes": [
   {
@@ -29,7 +29,11 @@
    "nome": "Pedro Henrique Andrade e Paiva",
    "nascimento": "2001-03-20",
    "papel": "professor",
-   "superiorId": null
+   "superiorId": null,
+   "setor": "Professores de Rebanho",
+   "secaoId": "s2",
+   "turma": "2A",
+   "cor": "verde"
   }
  ],
  "setores": [
@@ -48,6 +52,14 @@
   {
    "id": "st4",
    "nome": "Bíblia Intelecto"
+  },
+  {
+   "id": "st5",
+   "nome": "Professores de Rebanho"
+  },
+  {
+   "id": "st6",
+   "nome": "Recepção"
   }
  ],
  "rebanhos": [
@@ -63,136 +75,1720 @@
    ]
   },
   {
-   "id": "r-s1-azul",
+   "id": "r-s1-1A-azul",
    "nome": "Rebanho Azul",
    "cor": "azul",
-   "turma": "",
+   "turma": "1A",
    "secaoId": "s1",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s1-verde",
+   "id": "r-s1-1A-verde",
    "nome": "Rebanho Verde",
    "cor": "verde",
-   "turma": "",
+   "turma": "1A",
    "secaoId": "s1",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s1-amarelo",
+   "id": "r-s1-1A-amarelo",
    "nome": "Rebanho Amarelo",
    "cor": "amarelo",
-   "turma": "",
+   "turma": "1A",
    "secaoId": "s1",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s1-vermelho",
+   "id": "r-s1-1A-vermelho",
    "nome": "Rebanho Vermelho",
    "cor": "vermelho",
-   "turma": "",
+   "turma": "1A",
    "secaoId": "s1",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s2-azul",
+   "id": "r-s1-1B-azul",
    "nome": "Rebanho Azul",
    "cor": "azul",
-   "turma": "",
+   "turma": "1B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-1B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-1B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-1B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-1C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-1C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-1C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-1C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-2C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-3C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4A",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4B",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-4C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4C",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1A",
    "secaoId": "s2",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s2-amarelo",
-   "nome": "Rebanho Amarelo",
-   "cor": "amarelo",
-   "turma": "",
+   "id": "r-s2-1A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1A",
    "secaoId": "s2",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s2-vermelho",
-   "nome": "Rebanho Vermelho",
-   "cor": "vermelho",
-   "turma": "",
+   "id": "r-s2-1A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1A",
    "secaoId": "s2",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s3-azul",
-   "nome": "Rebanho Azul",
-   "cor": "azul",
-   "turma": "",
-   "secaoId": "s3",
-   "coordenadorId": null,
-   "professores": []
-  },
-  {
-   "id": "r-s3-verde",
-   "nome": "Rebanho Verde",
-   "cor": "verde",
-   "turma": "",
-   "secaoId": "s3",
-   "coordenadorId": null,
-   "professores": []
-  },
-  {
-   "id": "r-s3-amarelo",
-   "nome": "Rebanho Amarelo",
-   "cor": "amarelo",
-   "turma": "",
-   "secaoId": "s3",
-   "coordenadorId": null,
-   "professores": []
-  },
-  {
-   "id": "r-s3-vermelho",
+   "id": "r-s2-1A-vermelho",
    "nome": "Rebanho Vermelho",
    "cor": "vermelho",
-   "turma": "",
+   "turma": "1A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-1C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-2C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-3C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4A",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4B",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-4C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4C",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1A",
    "secaoId": "s3",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s4-azul",
-   "nome": "Rebanho Azul",
-   "cor": "azul",
-   "turma": "",
-   "secaoId": "s4",
-   "coordenadorId": null,
-   "professores": []
-  },
-  {
-   "id": "r-s4-verde",
+   "id": "r-s3-1A-verde",
    "nome": "Rebanho Verde",
    "cor": "verde",
-   "turma": "",
-   "secaoId": "s4",
+   "turma": "1A",
+   "secaoId": "s3",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s4-amarelo",
+   "id": "r-s3-1A-amarelo",
    "nome": "Rebanho Amarelo",
    "cor": "amarelo",
-   "turma": "",
+   "turma": "1A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-1C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-2C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-3C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4A",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4B",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-4C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4C",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1A",
    "secaoId": "s4",
    "coordenadorId": null,
    "professores": []
   },
   {
-   "id": "r-s4-vermelho",
+   "id": "r-s4-1A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1A-vermelho",
    "nome": "Rebanho Vermelho",
    "cor": "vermelho",
-   "turma": "",
+   "turma": "1A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "1C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "1C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "1C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-1C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "1C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "2C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "2C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "2C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-2C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "2C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "3C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "3C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "3C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-3C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "3C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4A-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4A-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4A-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4A-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4A",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4B-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4B-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4B-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4B-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4B",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4C-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "4C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4C-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "4C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4C-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "4C",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-4C-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "4C",
    "secaoId": "s4",
    "coordenadorId": null,
    "professores": []

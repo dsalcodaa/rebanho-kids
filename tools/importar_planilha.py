@@ -98,7 +98,7 @@ def main(caminho):
                     alertas.append(f"{nome}: {v} versículos decorados em {e['data']} (máximo {vmax[str(e['id'])]})")
 
     dados = {
-        "versao": 5,
+        "versao": 6,
         "ministerio": "Nova Kids e Infantil",
         "secoes": [
             {"id": "s1", "nome": "1ª seção", "horario": "08:00 às 10:00"},
@@ -108,24 +108,29 @@ def main(caminho):
         ],
         "pessoas": [
             {"id": "pe1", "nome": "Pedro Henrique Andrade e Paiva", "nascimento": "2001-03-20",
-             "papel": "professor", "superiorId": None},
+             "papel": "professor", "superiorId": None, "setor": "Professores de Rebanho",
+             "secaoId": "s2", "turma": "2A", "cor": "verde"},
         ],
         "setores": [
             {"id": "st1", "nome": "História Bíblica"},
             {"id": "st2", "nome": "Revisão e Retenção"},
             {"id": "st3", "nome": "Momento Alegria"},
             {"id": "st4", "nome": "Bíblia Intelecto"},
+            {"id": "st5", "nome": "Professores de Rebanho"},
+            {"id": "st6", "nome": "Recepção"},
         ],
-        # Cada seção tem os rebanhos Azul, Verde, Amarelo e Vermelho; o 2A Verde da planilha é o Verde da 2ª seção.
+        # Em cada seção, cada turma (1A a 4C) tem os rebanhos Azul, Verde, Amarelo e Vermelho.
+        # O 2A Verde da planilha é o da 2ª seção (id r1, mantido por compatibilidade).
         "rebanhos": [
             {"id": "r1", "nome": "Rebanho Verde", "cor": "verde", "turma": "2A", "secaoId": "s2",
              "coordenadorId": None, "professores": ["pe1"]},
         ] + [
-            {"id": f"r-{sec}-{cor}", "nome": f"Rebanho {cor.capitalize()}", "cor": cor, "turma": "",
+            {"id": f"r-{sec}-{turma}-{cor}", "nome": f"Rebanho {cor.capitalize()}", "cor": cor, "turma": turma,
              "secaoId": sec, "coordenadorId": None, "professores": []}
             for sec in ("s1", "s2", "s3", "s4")
+            for turma in [f"{n}{l}" for n in range(1, 5) for l in "ABC"]
             for cor in ("azul", "verde", "amarelo", "vermelho")
-            if (sec, cor) != ("s2", "verde")
+            if (sec, turma, cor) != ("s2", "2A", "verde")
         ],
                 "criancas": criancas,
         "encontros": [{"id": e["id"], "data": e["data"], "tipo": "aula"} for e in encontros],

@@ -116,3 +116,9 @@ label.check { display: flex; align-items: center; gap: .5rem; }
 .pequeno { font-size: .8rem; }
 #sessao { gap: .6rem; line-height: 1.2; }
 #sessao .btn { padding: .35rem .7rem; font-size: .8rem; }
+.turmas { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .75rem; margin-top: 1rem; }
+.turmas h3 { margin: 0 0 .4rem; font-size: 1rem; }
+.turmas .linha { display: flex; gap: .5rem; align-items: flex-start; padding: .45rem 0; border-top: 1px solid #e6ece8; font-size: .82rem; line-height: 1.35; color: inherit; text-decoration: none; }
+.turmas .linha:hover { background: #f3f8f5; }
+.turmas .linha.livre { opacity: .55; }
+.turmas .linha .cor { margin-top: .25rem; flex: none; }
