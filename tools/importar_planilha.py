@@ -79,6 +79,7 @@ def main(caminho):
             "entrada": next(x["data"] for x in encontros if x["id"] == entrada),
             "ativa": True,
             "rebanhoId": "r1",
+            "turma": "2A",
         })
         registros[cid] = limpo
         if not nasc:
@@ -94,10 +95,10 @@ def main(caminho):
                 v = r.get(str(e["id"]), {}).get("v")
                 if v is not None and v > vmax[str(e["id"])]:
                     nome = next(c["nome"] for c in criancas if c["id"] == cid)
-                    alertas.append(f"{nome}: {v} pontos de versículo em {e['data']} (máximo {vmax[str(e['id'])]})")
+                    alertas.append(f"{nome}: {v} versículos decorados em {e['data']} (máximo {vmax[str(e['id'])]})")
 
     dados = {
-        "versao": 4,
+        "versao": 5,
         "ministerio": "Nova Kids e Infantil",
         "secoes": [
             {"id": "s1", "nome": "1ª seção", "horario": "08:00 às 10:00"},

@@ -71,7 +71,7 @@ export function avaliarDesafio(db, d, crianca) {
   // Versículo em branco conta 0; só cobra o total depois que todas as semanas aconteceram.
   const futuras = semanas.filter((e) => !feitos.has(e.id)).length;
   const pontos = r.reduce((s, x) => s + (x.v || 0), 0);
-  if (!futuras && pontos < Number(d.versiculosMin)) motivos.push(`Versículos: ${pontos} de ${d.versiculosMin}`);
+  if (!futuras && pontos < Number(d.versiculosMin)) motivos.push(`Versículos decorados: ${pontos} de ${d.versiculosMin}`);
 
   if (motivos.length) return { status: 'nao', motivos, pontos };
   if (futuras || semLancamento) {
@@ -104,8 +104,8 @@ export const SUPERIOR = {
   coord_rebanho: 'coord_geral',
   professor: 'coord_rebanho',
   lider_geral: 'pastor',
-  lider_turma: 'lider_geral',
-  membro_setor: 'lider_turma',
+  lider_secao: 'lider_geral',
+  membro_setor: 'lider_secao',
 };
 
 export function descendentes(db, id) {
