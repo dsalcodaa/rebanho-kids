@@ -98,7 +98,7 @@ def main(caminho):
                     alertas.append(f"{nome}: {v} versículos decorados em {e['data']} (máximo {vmax[str(e['id'])]})")
 
     dados = {
-        "versao": 6,
+        "versao": 7,
         "ministerio": "Nova Kids e Infantil",
         "secoes": [
             {"id": "s1", "nome": "1ª seção", "horario": "08:00 às 10:00"},
@@ -147,6 +147,7 @@ def main(caminho):
         "provas": [{"id": "p1", "nome": "1ª prova"}, {"id": "p2", "nome": "2ª prova"}, {"id": "p3", "nome": "3ª prova"}],
         "notaMaxima": 10,
         "notas": {},
+        "programacoes": {},
         "alertas": alertas,
     }
     destino = Path(__file__).resolve().parent.parent / "data" / "dados.json"

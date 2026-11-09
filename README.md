@@ -28,12 +28,18 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Painel: frequência por mês, aniversariantes, crianças que precisam de atenção (Kids < 75% ou 3 faltas seguidas), ranking de versículos.
 - **Cronograma** (pastores): datas do ano, tema, versículo e pontos, meditação, desafios e premiação.
   Tudo aparece direto nos lançamentos dos professores; data "sem programação" sai dos lançamentos e dos desafios.
-- **Equipe**: organograma e cadastro; cada nível cadastra quem está abaixo dele no mesmo ramo.
+- **Equipes e Setores**: organograma separado (Ensino: coordenadoras e professores; Setores: líderes gerais),
+  cards por setor, fluxo visual por seção (Recepção → setores, com os professores de rebanho conduzindo as crianças),
+  lista de pessoas com botão Editar e cadastro. Coordenadores e professores não veem os setores; líderes veem só o próprio setor.
+- **Onde atua**: cada pessoa pode ter várias linhas de seção/setor (ex.: professor em duas seções, ou em outro setor numa seção).
+- Coordenadores gerais e líderes gerais já vêm subordinados ao pastor.
 - **Rebanhos**: escolha a seção; cards por turma com as 4 cores, professor, coordenadora e crianças ativas.
-- **Lançamentos** (professores e coordenadoras): presença, culto, versículo e meditação. Pastores não lançam.
-- **Recepção** (membros do setor Recepção): cadastra crianças e marca presença/faltas dos rebanhos da sua seção.
+- **Lançamentos**: só professores de rebanho (presença, culto, versículo, meditação e notas).
+- **Recepção** (perfil próprio no login; quem está no setor Recepção): cadastra crianças e marca presença/faltas dos rebanhos da sua seção.
   Só a Recepção (e o administrador) cadastra e edita crianças.
-- **Meu setor** (líderes e membros): equipe do setor e a programação do setor no cronograma.
+- **Meu setor** (líderes e membros): programação própria do setor (data, seção e tema, cadastrados pelos líderes) e equipe.
+  Líderes e membros não têm a aba Cronograma.
+- Login: "Pastor (acesso total)" é o antigo Administrador.
 - **Cadastro inicial**: link no login para novos membros; a liderança define função, setor e subordinação na aba Equipe.
 - **Login** por perfil (sem senha nesta versão de teste; senha e segurança reais vêm com o Supabase).
 - **Panorama**: pastor (coordenadores gerais, líderes gerais, coordenadoras de rebanho, líderes de seção),

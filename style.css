@@ -122,3 +122,21 @@ label.check { display: flex; align-items: center; gap: .5rem; }
 .turmas .linha:hover { background: #f3f8f5; }
 .turmas .linha.livre { opacity: .55; }
 .turmas .linha .cor { margin-top: .25rem; flex: none; }
+.turmas .coord { margin: 0 0 .3rem; font-size: .82rem; }
+.atuacoes { grid-column: 1 / -1; display: grid; gap: .5rem; padding: .75rem; border: 1px dashed #c9d6ce; border-radius: 10px; }
+.atuacoes .linhas { display: grid; gap: .5rem; }
+.atuacao { display: flex; flex-wrap: wrap; gap: .5rem; align-items: end; }
+.atuacao label { flex: 1 1 150px; }
+.atuacoes [data-mais] { justify-self: start; }
+.setores { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .75rem; }
+.card.setor { border-top: 5px solid; }
+.card.setor h3, .secao-fluxo h3 { margin: 0 0 .5rem; font-size: 1rem; }
+.card.setor p { margin: .35rem 0; font-size: .85rem; }
+.secao-fluxo { margin-bottom: .9rem; }
+.fluxo { display: flex; align-items: stretch; gap: .4rem; overflow-x: auto; padding-bottom: .25rem; }
+.etapa { flex: 1 0 140px; display: grid; align-content: start; gap: .3rem; background: #f6f9f7; border-radius: 10px; border-top: 4px solid; padding: .6rem; font-size: .85rem; }
+.etapa small { color: #555; line-height: 1.35; }
+.etapa .prox { color: #2f6b45; }
+.passo { display: inline-grid; place-items: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #2f6b45; color: #fff; font-size: .75rem; }
+.seta { align-self: center; color: #8aa597; font-size: 1.2rem; }
+.conduz { margin: .6rem 0 0; font-size: .82rem; color: #555; }

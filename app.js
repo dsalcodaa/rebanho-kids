@@ -50,7 +50,7 @@ function dadosDoForm(form) {
 
 // ---------- Organograma e acesso ----------
 const PAPEIS = {
-  pastor: 'Pastor administrador',
+  pastor: 'Pastor',
   coord_geral: 'Coordenador geral',
   coord_rebanho: 'Coordenador de rebanho',
   professor: 'Professor de rebanho',
@@ -85,9 +85,10 @@ const logado = () => sessao() === 'admin' || !!eu();
 const papel = () => eu()?.papel ?? 'admin';
 const editaCronograma = () => ['admin', 'pastor'].includes(papel());
 // Recepção: equipe de setor cujo setor é "Recepção". Cadastra crianças e marca presença.
-const ehRecepcao = () => LIDERES.includes(papel()) && eu()?.setor === SETOR_RECEPCAO;
+const ehRecepcao = () => LIDERES.includes(papel()) && setoresDe(eu()).includes(SETOR_RECEPCAO);
 const cadastraCrianca = () => papel() === 'admin' || ehRecepcao();
-const lancaTudo = () => ['admin', 'coord_geral', 'coord_rebanho', 'professor'].includes(papel());
+// Lançamentos completos (versículos, meditação, notas): só professores de rebanho.
+const lancaTudo = () => papel() === 'professor';
 const lancaPresenca = () => lancaTudo() || ehRecepcao();
 
 // Abas do menu: lista de perfis ou função que decide.
@@ -95,9 +96,9 @@ const ABAS = [
   ['', 'Painel', ENSINO],
   ['panorama', 'Panorama', ['admin', 'pastor', 'coord_geral', 'lider_geral', 'lider_secao']],
   ['setor', 'Meu setor', LIDERES],
-  ['recepcao', 'Recepção', () => papel() === 'admin' || ehRecepcao()],
-  ['cronograma', 'Cronograma', TODOS],
-  ['equipe', 'Equipe', TODOS],
+  ['recepcao', 'Recepção', () => ehRecepcao()],
+  ['cronograma', 'Cronograma', ENSINO],
+  ['equipe', 'Equipes e Setores', TODOS],
   ['rebanhos', 'Rebanhos', ['admin', 'pastor', 'coord_geral', 'coord_rebanho']],
   ['encontros', 'Lançamentos', lancaTudo],
   ['criancas', 'Crianças', () => ENSINO.includes(papel()) || ehRecepcao()],
@@ -108,12 +109,22 @@ const abasPermitidas = () => ABAS.filter(([, , quem]) => (typeof quem === 'funct
 const pessoa = (id) => db.pessoas.find((p) => p.id === id);
 const nomePessoa = (id) => pessoa(id)?.nome ?? '—';
 const secao = (id) => db.secoes.find((s) => s.id === id);
+// Onde a pessoa atua: uma linha por seção/setor (professor pode estar em mais de uma seção,
+// membro pode estar em setores diferentes em cada seção). Cadastros antigos tinham um campo só.
+const atuacoes = (p) => p?.atuacoes ?? (p?.secaoId || p?.setor
+  ? [{ secaoId: p.secaoId || '', setor: p.setor || '', turma: p.turma || '', cor: p.cor || '' }] : []);
+const setoresDe = (p) => [...new Set(atuacoes(p).map((a) => a.setor).filter(Boolean))];
+const secoesDe = (p) => [...new Set(atuacoes(p).map((a) => a.secaoId).filter(Boolean))];
+const textoAtuacao = (p) => atuacoes(p).map((a) => [secao(a.secaoId)?.nome, a.setor,
+  [a.turma, CORES[a.cor]?.[0]].filter(Boolean).join(' ')].filter(Boolean).join(' · ')).join(' | ');
 const CORES = { azul: ['Azul', '#2f6fd6'], verde: ['Verde', '#2f9d55'], amarelo: ['Amarelo', '#e0b000'], vermelho: ['Vermelho', '#d23c32'] };
 const ORDEM_COR = Object.keys(CORES);
 const ordemRebanho = (a, b) => (a.secaoId ?? 'z').localeCompare(b.secaoId ?? 'z')
   || TURMAS.indexOf(a.turma) - TURMAS.indexOf(b.turma) || ORDEM_COR.indexOf(a.cor) - ORDEM_COR.indexOf(b.cor);
 // Recepção enxerga os rebanhos da sua seção (ou todos, se a seção não foi definida).
-const meusRebanhos = () => (ehRecepcao() ? db.rebanhos.filter((r) => !eu().secaoId || r.secaoId === eu().secaoId)
+const secoesRecepcao = () => atuacoes(eu()).filter((a) => a.setor === SETOR_RECEPCAO).map((a) => a.secaoId);
+const meusRebanhos = () => (ehRecepcao()
+  ? db.rebanhos.filter((r) => { const ss = secoesRecepcao(); return !ss.length || ss.includes('') || ss.includes(r.secaoId); })
   : [...rebanhosVisiveis(db, eu())]).sort(ordemRebanho);
 const rebanho = (id) => db.rebanhos.find((r) => r.id === id);
 const acharRebanho = (secaoId, turma, cor) => db.rebanhos.find((r) => r.secaoId === secaoId && r.turma === turma && r.cor === cor);
@@ -154,7 +165,7 @@ function montarTopo() {
     area.innerHTML = '';
     return;
   }
-  area.innerHTML = `<span><strong>${esc(eu()?.nome ?? 'Administrador')}</strong><br>${eu() ? `${PAPEIS[eu().papel]}${eu().setor ? ` · ${esc(eu().setor)}` : ''}` : 'acesso total (teste)'}</span>
+  area.innerHTML = `<span><strong>${esc(eu()?.nome ?? 'Pastor')}</strong><br>${eu() ? `${PAPEIS[eu().papel]}${setoresDe(eu()).length ? ` · ${esc(setoresDe(eu()).join(', '))}` : ''}` : 'acesso total (teste)'}</span>
     <button class="btn sec" id="sair">Sair</button>`;
   document.getElementById('sair').onclick = () => {
     localStorage.removeItem(CHAVE_PERFIL);
@@ -168,14 +179,17 @@ function montarTopo() {
 
 // ---------- Login ----------
 function login() {
-  const grupos = Object.entries(PAPEIS).map(([k, t]) => [k, t, db.pessoas.filter((p) => p.papel === k)]).filter(([, , ps]) => ps.length);
+  // Recepção tem perfil próprio no login
+  const recep = (p) => LIDERES.includes(p.papel) && setoresDe(p).includes(SETOR_RECEPCAO);
+  const grupos = [...Object.entries(PAPEIS).map(([k, t]) => [k, t, db.pessoas.filter((p) => p.papel === k && !recep(p))]),
+    ['recepcao', 'Recepção', db.pessoas.filter(recep)]].filter(([, , ps]) => ps.length);
   app.innerHTML = `
     <div class="login card">
       <span class="logo grande">RK</span>
       <h1>Rebanho Kids</h1>
       <p class="sub">${esc(db.ministerio)} · Gestão e acompanhamento</p>
       <form id="entrar" class="pilha">
-        <label>Perfil <select name="papel">${opcoes([['admin', 'Administrador do sistema'], ...grupos.map(([k, t]) => [k, t])], 'admin')}</select></label>
+        <label>Perfil <select name="papel">${opcoes([['admin', 'Pastor (acesso total)'], ...grupos.map(([k, t]) => [k, t])], 'admin')}</select></label>
         <label id="quem" hidden>Nome <select name="pessoa"></select></label>
         <button class="btn">Entrar</button>
       </form>
@@ -389,7 +403,7 @@ function tabelaLideresGerais(ps) {
   return `<div class="rolar"><table class="tabela">
     <tr><th>Líder geral</th><th>Setor</th><th>Líderes de seção</th><th>Membros da equipe</th></tr>
     ${ps.map((p) => { const membros = [...descendentes(db, p.id)].map(pessoa).filter((x) => x?.papel === 'membro_setor');
-      return `<tr><td><strong>${esc(p.nome)}</strong></td><td>${esc(p.setor || '—')}</td><td>${nomes(filhos(p, 'lider_secao'))}</td><td>${membros.length}</td></tr>`; }).join('') || vazioLinha(4, 'Nenhum líder geral cadastrado.')}
+      return `<tr><td><strong>${esc(p.nome)}</strong></td><td>${esc(setoresDe(p).join(', ') || '—')}</td><td>${nomes(filhos(p, 'lider_secao'))}</td><td>${membros.length}</td></tr>`; }).join('') || vazioLinha(4, 'Nenhum líder geral cadastrado.')}
   </table></div>`;
 }
 
@@ -397,9 +411,9 @@ function tabelaLideresSecao(ps) {
   return `<div class="rolar"><table class="tabela">
     <tr><th>Líder de seção</th><th>Seção</th><th>Setor</th><th>Líder geral</th><th>Equipe</th></tr>
     ${ps.map((p) => `<tr><td><strong>${esc(p.nome)}</strong></td>
-      <td>${secao(p.secaoId) ? `${esc(secao(p.secaoId).nome)} <span class="vazio">${esc(secao(p.secaoId).horario)}</span>` : '—'}</td>
-      <td>${esc(p.setor || '—')}</td><td>${esc(nomePessoa(p.superiorId))}</td>
-      <td>${filhos(p, 'membro_setor').map((m) => `${esc(m.nome)}${m.setor ? ` <span class="vazio">(${esc(m.setor)})</span>` : ''}${m.telefone ? ` <span class="vazio">· ${esc(m.telefone)}</span>` : ''}`).join('<br>') || '—'}</td></tr>`).join('') || vazioLinha(5, 'Nenhum líder de seção cadastrado.')}
+      <td>${esc(secoesDe(p).map((id) => secao(id)?.nome).join(', ') || '—')}</td>
+      <td>${esc(setoresDe(p).join(', ') || '—')}</td><td>${esc(nomePessoa(p.superiorId))}</td>
+      <td>${filhos(p, 'membro_setor').map((m) => `${esc(m.nome)}${setoresDe(m).length ? ` <span class="vazio">(${esc(setoresDe(m).join(', '))})</span>` : ''}${m.telefone ? ` <span class="vazio">· ${esc(m.telefone)}</span>` : ''}`).join('<br>') || '—'}</td></tr>`).join('') || vazioLinha(5, 'Nenhum líder de seção cadastrado.')}
   </table></div>`;
 }
 
@@ -446,7 +460,7 @@ function panorama() {
     html = `
       <h1>Panorama — ${esc(eu().nome)}</h1>
       ${cards([[de('lider_secao').length, 'líderes de seção'], [membros.length, 'membros da equipe'],
-        [new Set(membros.map((m) => m.setor).filter(Boolean)).size, 'setores atendidos']])}
+        [new Set(membros.flatMap(setoresDe)).size, 'setores atendidos']])}
       <h2>Líderes de seção e sua equipe</h2>
       ${tabelaLideresSecao(de('lider_secao'))}`;
   }
@@ -562,11 +576,32 @@ function dataCronograma(id) {
   };
 }
 
-// ---------- Equipe (organograma) ----------
-const COM_SECAO = ['professor', 'coord_rebanho', 'lider_secao', 'membro_setor'];
-const COM_TURMA = ['professor', 'coord_rebanho'];
+// ---------- Equipes e Setores ----------
+const COM_ATUACAO = ['coord_geral', 'coord_rebanho', 'professor', ...LIDERES];
+const RAMO_ENSINO = ['pastor', 'coord_geral', 'coord_rebanho', 'professor'];
+const RAMO_SETORES = ['pastor', ...LIDERES];
+// Caminho da criança na seção: começa na Recepção e passa pelos setores (Professores de Rebanho conduzem).
+const setoresDoFluxo = () => [...db.setores.filter((st) => st.nome === SETOR_RECEPCAO),
+  ...db.setores.filter((st) => ![SETOR_RECEPCAO, SETOR_PROFESSOR].includes(st.nome))];
+const COR_SETOR = ['#6b7280', '#2f6fd6', '#2f9d55', '#e0b000', '#d23c32', '#8a4fd1', '#0f8b8d'];
+const DICA_ATUACAO = {
+  professor: 'Uma linha por seção. No setor Professores de Rebanho, escolha turma e cor: o nome entra direto na aba Rebanhos.',
+  coord_rebanho: 'Uma linha por seção. Turma ou cor em branco = coordena todas da seção.',
+  coord_geral: 'Seções que acompanha.',
+};
+
+const linhaAtuacao = (a = {}) => `<div class="atuacao">
+    <label>Seção <select data-k="secaoId">${opcoes(db.secoes.map((x) => [x.id, `${x.nome} (${x.horario})`]), a.secaoId, '—')}</select></label>
+    <label data-campo="setor">Setor <select data-k="setor">${opcoes(db.setores.map((x) => [x.nome, x.nome]), a.setor, '—')}</select></label>
+    <label data-campo="turma">Turma <select data-k="turma">${opcoes(TURMAS.map((t) => [t, t]), a.turma, '—')}</select></label>
+    <label data-campo="turma">Cor do rebanho <select data-k="cor">${opcoes(Object.entries(CORES).map(([k, [t]]) => [k, t]), a.cor, '—')}</select></label>
+    <button type="button" class="btn sec remover" aria-label="Remover linha">Remover</button></div>`;
+
+const lerAtuacoes = (form) => [...form.querySelectorAll('.atuacao')]
+  .map((el) => Object.fromEntries([...el.querySelectorAll('[data-k]')].map((x) => [x.dataset.k, x.value])));
 
 function formPessoa(p, papeisPermitidos) {
+  const linhas = atuacoes(p).length ? atuacoes(p) : [{ setor: p.interesse }];
   return `
     <label>Nome completo <input name="nome" required value="${esc(p.nome)}"></label>
     <label>Função <select name="papel">${opcoes(papeisPermitidos.map((k) => [k, PAPEIS[k]]), PAPEIS[p.papel] ? p.papel : papeisPermitidos[0])}</select></label>
@@ -574,91 +609,152 @@ function formPessoa(p, papeisPermitidos) {
     <label>Data de nascimento <input type="date" name="nascimento" value="${esc(p.nascimento)}"></label>
     <label>Telefone <input name="telefone" value="${esc(p.telefone)}"></label>
     <label>E-mail <input type="email" name="email" value="${esc(p.email)}"></label>
-    <label data-so="${COM_SECAO.join(' ')}">Seção <select name="secaoId">${opcoes(db.secoes.map((x) => [x.id, `${x.nome} (${x.horario})`]), p.secaoId, '—')}</select></label>
-    <label data-so="${COM_TURMA.join(' ')}">Turma <select name="turma">${opcoes(TURMAS.map((t) => [t, t]), p.turma, '—')}</select></label>
-    <label data-so="${COM_TURMA.join(' ')}">Cor do rebanho <select name="cor">${opcoes(Object.entries(CORES).map(([k, [t]]) => [k, t]), p.cor, '—')}</select></label>
-    <label data-so="${LIDERES.join(' ')}">Setor <select name="setor">${opcoes(
-      [...new Set([...db.setores.map((x) => x.nome), p.setor].filter(Boolean))].map((x) => [x, x]), p.setor ?? p.interesse, '—')}</select></label>
-    <p class="vazio pequeno" data-so="coord_rebanho">Coordenadora: turma ou cor em branco = coordena todas da seção.</p>
-    <p class="vazio pequeno" data-so="professor">Professor entra no setor ${SETOR_PROFESSOR} e no rebanho da seção, turma e cor escolhidas.</p>`;
+    <div class="atuacoes" data-so="${COM_ATUACAO.join(' ')}">
+      <strong>Onde atua</strong> <span class="vazio pequeno" data-dica></span>
+      <div class="linhas">${linhas.map(linhaAtuacao).join('')}</div>
+      <button type="button" class="btn sec" data-mais>+ Adicionar seção ou setor</button>
+    </div>`;
 }
 
-// Atualiza "Subordinado a" e os campos extras conforme a função escolhida.
+// Atualiza "Subordinado a" e os campos de atuação conforme a função escolhida.
 function ligarPessoa(form, p) {
-  const atualizar = () => {
-    const sup = SUPERIOR[form.papel.value];
-    const candidatos = [...new Set([...equipeVisivel(), ...(eu() ? [eu(), ...ancestrais(eu())] : [])])].filter((x) => x.papel === sup && x.id !== p.id);
-    const padrao = p.superiorId ?? (eu()?.papel === sup ? eu().id : eu()?.papel === form.papel.value ? eu().superiorId ?? '' : '');
-    form.superiorId.innerHTML = sup
-      ? opcoes(candidatos.map((x) => [x.id, x.nome]), padrao, `— escolher ${PAPEIS[sup].toLowerCase()} —`)
-      : '<option value="">Topo do organograma</option>';
-    form.querySelectorAll('[data-so]').forEach((el) => { el.hidden = !el.dataset.so.split(' ').includes(form.papel.value); });
-    sugerirCoord();
+  const caixa = form.querySelector('.linhas');
+  const campos = () => {
+    const f = form.papel.value;
+    caixa.querySelectorAll('.atuacao').forEach((el) => {
+      const setor = el.querySelector('[data-k=setor]').value;
+      el.querySelector('[data-campo=setor]').hidden = f.startsWith('coord');
+      el.querySelectorAll('[data-campo=turma]').forEach((x) => { x.hidden = !(f === 'coord_rebanho' || (f === 'professor' && setor === SETOR_PROFESSOR)); });
+    });
+    form.querySelector('[data-dica]').textContent = DICA_ATUACAO[f] ?? 'Uma linha por seção e setor em que atua.';
   };
   // Professor: sugere como superior a coordenadora do rebanho escolhido.
   const sugerirCoord = () => {
     if (form.papel.value !== 'professor' || form.superiorId.value) return;
-    const r = acharRebanho(form.secaoId.value, form.turma.value, form.cor.value);
+    const a = lerAtuacoes(form).find((x) => x.setor === SETOR_PROFESSOR);
+    const r = a && acharRebanho(a.secaoId, a.turma, a.cor);
     if (r?.coordenadorId && [...form.superiorId.options].some((o) => o.value === r.coordenadorId)) form.superiorId.value = r.coordenadorId;
   };
+  const atualizar = () => {
+    const sup = SUPERIOR[form.papel.value];
+    const candidatos = [...new Set([...equipeVisivel(), ...(eu() ? [eu(), ...ancestrais(eu())] : [])])].filter((x) => x.papel === sup && x.id !== p.id);
+    let padrao = p.superiorId ?? (eu()?.papel === sup ? eu().id : eu()?.papel === form.papel.value ? eu().superiorId ?? '' : '');
+    // Coordenadores gerais e líderes gerais respondem aos pastores
+    if (!padrao && sup === 'pastor' && candidatos.length) padrao = candidatos[0].id;
+    form.superiorId.innerHTML = sup
+      ? opcoes(candidatos.map((x) => [x.id, x.nome]), padrao, `— escolher ${PAPEIS[sup].toLowerCase()} —`)
+      : '<option value="">Topo do organograma</option>';
+    form.querySelectorAll('[data-so]').forEach((el) => { el.hidden = !el.dataset.so.split(' ').includes(form.papel.value); });
+    if (form.papel.value === 'professor') caixa.querySelectorAll('[data-k=setor]').forEach((x) => { if (!x.value) x.value = SETOR_PROFESSOR; });
+    campos();
+    sugerirCoord();
+  };
   form.papel.onchange = atualizar;
-  ['secaoId', 'turma', 'cor'].forEach((k) => { form[k].onchange = sugerirCoord; });
+  caixa.onchange = () => { campos(); sugerirCoord(); };
+  caixa.onclick = (ev) => { if (ev.target.closest('.remover')) ev.target.closest('.atuacao').remove(); };
+  form.querySelector('[data-mais]').onclick = () => {
+    caixa.insertAdjacentHTML('beforeend', linhaAtuacao({ setor: form.papel.value === 'professor' ? SETOR_PROFESSOR : '' }));
+    campos();
+  };
   atualizar();
 }
 
 function lerPessoa(form) {
   const d = dadosDoForm(form);
-  if (!COM_SECAO.includes(d.papel)) d.secaoId = '';
-  if (!COM_TURMA.includes(d.papel)) { d.turma = ''; d.cor = ''; }
-  if (d.papel === 'professor') d.setor = SETOR_PROFESSOR;
-  else if (!LIDERES.includes(d.papel)) d.setor = '';
-  d.superiorId ||= null;
-  if (d.papel === 'professor' && !(d.secaoId && d.turma && d.cor)) return { erro: 'Professor precisa de seção, turma e cor do rebanho' };
-  return d;
+  const lista = (COM_ATUACAO.includes(d.papel) ? lerAtuacoes(form) : []).map((a) => {
+    if (d.papel.startsWith('coord')) a.setor = '';
+    if (!(d.papel === 'coord_rebanho' || (d.papel === 'professor' && a.setor === SETOR_PROFESSOR))) { a.turma = ''; a.cor = ''; }
+    return a;
+  }).filter((a) => a.secaoId || a.setor);
+  if (d.papel === 'professor') {
+    const prof = lista.filter((a) => a.setor === SETOR_PROFESSOR);
+    if (!prof.length || prof.some((a) => !(a.secaoId && a.turma && a.cor))) {
+      return { erro: 'Professor precisa de seção, turma e cor em cada linha de Professores de Rebanho' };
+    }
+  }
+  // Atuações substituem os campos antigos de seção/setor/turma/cor
+  return { ...d, atuacoes: lista, secaoId: undefined, setor: undefined, turma: undefined, cor: undefined, superiorId: d.superiorId || null };
 }
 
-// Coloca a pessoa nos rebanhos da seção/turma/cor do cadastro (aparece direto na aba Rebanhos).
+// Coloca a pessoa nos rebanhos das suas atuações (aparece direto na aba Rebanhos).
 function vincular(p) {
-  const refazCoord = p.papel !== 'coord_rebanho' || p.secaoId;
+  const as = atuacoes(p);
+  const refazCoord = p.papel !== 'coord_rebanho' || as.some((a) => a.secaoId);
   for (const r of db.rebanhos) {
     r.professores = r.professores.filter((x) => x !== p.id);
     if (refazCoord && r.coordenadorId === p.id) r.coordenadorId = null;
   }
   if (p.papel === 'professor') {
-    const r = acharRebanho(p.secaoId, p.turma, p.cor);
-    r.professores.push(p.id);
-    if (!p.superiorId && r.coordenadorId) p.superiorId = r.coordenadorId;
+    as.filter((a) => a.setor === SETOR_PROFESSOR).forEach((a) => {
+      const r = acharRebanho(a.secaoId, a.turma, a.cor);
+      if (!r) return;
+      if (!r.professores.includes(p.id)) r.professores.push(p.id);
+      if (!p.superiorId && r.coordenadorId) p.superiorId = r.coordenadorId;
+    });
   }
-  if (p.papel === 'coord_rebanho' && p.secaoId) {
-    db.rebanhos.filter((r) => r.secaoId === p.secaoId && (!p.turma || r.turma === p.turma) && (!p.cor || r.cor === p.cor))
-      .forEach((r) => { r.coordenadorId = p.id; });
+  if (p.papel === 'coord_rebanho') {
+    as.filter((a) => a.secaoId).forEach((a) => db.rebanhos
+      .filter((r) => r.secaoId === a.secaoId && (!a.turma || r.turma === a.turma) && (!a.cor || r.cor === a.cor))
+      .forEach((r) => { r.coordenadorId = p.id; }));
   }
 }
 
 function equipe() {
   const visiveis = equipeVisivel();
+  const todos = db.pessoas.filter((p) => PAPEIS[p.papel]);
   const ids = new Set(visiveis.map((p) => p.id));
   const pode = CADASTRA[papel()];
   const editavel = (p) => p.id !== eu()?.id && pode.includes(p.papel);
   const novos = pode.length ? db.pessoas.filter((p) => p.papel === 'novo') : [];
-  const no = (p) => {
-    const filhos = visiveis.filter((x) => x.superiorId === p.id);
-    const extra = [p.papel === 'lider_secao' && secao(p.secaoId)?.nome, p.setor,
-      ...db.rebanhos.filter((r) => r.professores.includes(p.id)).map(nomeRebanho),
-      ...(() => { const n = db.rebanhos.filter((r) => r.coordenadorId === p.id).length; return n ? [`coordena ${n} rebanho(s)`] : []; })()]
-      .filter(Boolean).join(' · ');
-    return `<li>${editavel(p) ? `<a href="#/pessoa/${p.id}">${esc(p.nome)}</a>` : `<strong>${esc(p.nome)}</strong>`}
-      <span class="papel">${PAPEIS[p.papel]}${extra ? ` · ${esc(extra)}` : ''}</span>
-      ${filhos.length ? `<ul>${filhos.map(no).join('')}</ul>` : ''}</li>`;
+  // Coordenadores e professores cuidam só do ensino; líderes e membros veem só os próprios setores.
+  const verEnsino = !LIDERES.includes(papel());
+  const verSetores = !['coord_geral', 'coord_rebanho', 'professor'].includes(papel());
+  const setoresVis = db.setores.filter((st) => st.nome !== SETOR_PROFESSOR && (!LIDERES.includes(papel()) || setoresDe(eu()).includes(st.nome)));
+  const nome = (p) => (editavel(p) ? `<a href="#/pessoa/${p.id}">${esc(p.nome)}</a>` : `<strong>${esc(p.nome)}</strong>`);
+  const no = (p, ramo) => {
+    const filhos = visiveis.filter((x) => x.superiorId === p.id && ramo.includes(x.papel));
+    const n = db.rebanhos.filter((r) => r.coordenadorId === p.id).length;
+    const extra = [textoAtuacao(p), n && `coordena ${n} rebanho(s)`].filter(Boolean).join(' · ');
+    return `<li>${nome(p)} <span class="papel">${PAPEIS[p.papel]}${extra ? ` · ${esc(extra)}` : ''}</span>
+      ${filhos.length ? `<ul>${filhos.map((f) => no(f, ramo)).join('')}</ul>` : ''}</li>`;
   };
-  const raizes = visiveis.filter((p) => !p.superiorId || !ids.has(p.superiorId));
+  const arvore = (ramo) => {
+    const raizes = visiveis.filter((p) => ramo.includes(p.papel) && (!p.superiorId || !ids.has(p.superiorId)))
+      .filter((p) => p.papel !== 'pastor' || visiveis.some((x) => x.superiorId === p.id && ramo.includes(x.papel)) || ramo === RAMO_ENSINO);
+    return raizes.length ? `<ul class="arvore">${raizes.map((p) => no(p, ramo)).join('')}</ul>` : '<p class="vazio">Ninguém cadastrado.</p>';
+  };
+  const ondeNoSetor = (p, st) => atuacoes(p).filter((a) => a.setor === st.nome).map((a) => secao(a.secaoId)?.nome).filter(Boolean).join(', ');
+  const cartaoSetor = (st, i) => {
+    const gente = (k) => todos.filter((p) => p.papel === k && setoresDe(p).includes(st.nome));
+    const lista = (k) => gente(k).map((p) => `${nome(p)}${ondeNoSetor(p, st) ? ` <span class="vazio">(${esc(ondeNoSetor(p, st))})</span>` : ''}`).join('<br>');
+    return `<div class="card setor" style="border-top-color:${COR_SETOR[i % COR_SETOR.length]}"><h3>${esc(st.nome)}</h3>
+      ${[...LIDERES, 'professor'].map((k) => gente(k).length ? `<p><span class="papel">${PAPEIS[k]}</span><br>${lista(k)}</p>` : '').join('') || '<p class="vazio">ninguém cadastrado</p>'}</div>`;
+  };
+  const fluxo = (s) => {
+    const etapas = setoresDoFluxo().filter((st) => setoresVis.includes(st));
+    const gente = (st) => todos.filter((p) => atuacoes(p).some((a) => a.setor === st.nome && a.secaoId === s.id));
+    const prox = (st) => (db.programacoes?.[st.id] || []).filter((x) => (!x.secaoId || x.secaoId === s.id) && x.data >= hoje())
+      .sort((a, b) => a.data.localeCompare(b.data))[0];
+    const profs = todos.filter((p) => p.papel === 'professor' && atuacoes(p).some((a) => a.setor === SETOR_PROFESSOR && a.secaoId === s.id));
+    const nCriancas = db.criancas.filter((c) => c.ativa && rebanho(c.rebanhoId)?.secaoId === s.id).length;
+    return `<div class="card secao-fluxo"><h3>${esc(s.nome)} <span class="vazio">· ${esc(s.horario)} · ${nCriancas} criança(s)</span></h3>
+      <div class="fluxo">${etapas.map((st, i) => { const px = prox(st);
+        return `${i ? '<span class="seta" aria-hidden="true">→</span>' : ''}
+        <div class="etapa" style="border-top-color:${COR_SETOR[db.setores.indexOf(st) % COR_SETOR.length]}">
+          <span class="passo">${i + 1}</span> <strong>${esc(st.nome)}</strong>
+          <small>${gente(st).map((p) => `${esc(p.nome)}${['lider_geral', 'lider_secao'].includes(p.papel) ? ' <em>(líder)</em>' : ''}`).join('<br>') || 'ninguém escalado'}</small>
+          ${px ? `<small class="prox">Próximo: ${fmt(px.data)} · ${esc(px.tema)}</small>` : ''}</div>`; }).join('')}</div>
+      <p class="conduz">Professores de rebanho conduzem as crianças entre os setores: ${profs.length ? esc(profs.map((p) => p.nome).join(', ')) : 'nenhum nesta seção'}</p></div>`;
+  };
+  const ordem = Object.keys(PAPEIS);
+  const pessoas = [...visiveis].sort((a, b) => ordem.indexOf(a.papel) - ordem.indexOf(b.papel) || a.nome.localeCompare(b.nome));
   const orfaos = visiveis.filter((p) => SUPERIOR[p.papel] && !p.superiorId);
-  const novoForm = ['professor', 'coord_rebanho'].includes(papel()) ? { secaoId: eu().secaoId, turma: eu().turma, cor: eu().cor } : {};
+  const novoForm = ['professor', 'coord_rebanho'].includes(papel())
+    ? { atuacoes: atuacoes(eu()).filter((a) => a.secaoId).map((a) => ({ ...a, setor: SETOR_PROFESSOR })) } : {};
 
   app.innerHTML = `
-    <h1>Equipe</h1>
-    <p class="sub">${esc(db.ministerio)}<br>Ensino: Pastores → Coordenadores gerais → Coordenadores de rebanho → Professores → Crianças
-      <br>Setores: Pastores → Líderes gerais → Líderes de seção → Membros da equipe</p>
+    <h1>Equipes e Setores</h1>
+    <p class="sub">${esc(db.ministerio)}</p>
     ${novos.length ? `<h2>Novos membros aguardando definição</h2>
     <div class="rolar"><table class="tabela">
       <tr><th>Nome</th><th>Idade</th><th>Telefone</th><th>E-mail</th><th>Setor de interesse</th><th>Cadastro em</th><th></th></tr>
@@ -666,24 +762,40 @@ function equipe() {
         <td>${esc(p.email || '—')}</td><td>${esc(p.interesse || '—')}</td><td>${fmt(p.cadastroEm)}</td>
         <td><a class="btn" href="#/pessoa/${p.id}">Definir função</a></td></tr>`).join('')}
     </table></div>` : ''}
+
     <h2>Organograma</h2>
-    ${raizes.length ? `<ul class="arvore">${raizes.map(no).join('')}</ul>` : '<p class="vazio">Ninguém cadastrado.</p>'}
-    <h2>Setores</h2>
-    <div class="cards">${db.setores.map((st) => { const gente = visiveis.filter((p) => p.setor === st.nome);
-      return `<div class="card"><div class="num" style="font-size:1.05rem">${esc(st.nome)}</div><div class="rot">
-        ${[...LIDERES, 'professor'].map((k) => { const ps = gente.filter((p) => p.papel === k);
-          return ps.length ? `${PAPEIS[k]}: ${ps.map((p) => esc(p.nome)).join(', ')}` : ''; }).filter(Boolean).join('<br>') || 'ninguém cadastrado'}</div></div>`; }).join('')}</div>
+    <div class="duas">
+      ${verEnsino ? `<div class="card"><h3>Ensino: coordenadoras e professores</h3>
+        <p class="vazio pequeno">Pastores → Coordenadores gerais → Coordenadoras de rebanho → Professores de rebanho</p>${arvore(RAMO_ENSINO)}</div>` : ''}
+      ${verSetores ? `<div class="card"><h3>Setores: líderes gerais</h3>
+        <p class="vazio pequeno">Pastores → Líderes gerais → Líderes de seção → Membros da equipe</p>${arvore(RAMO_SETORES)}</div>` : ''}
+    </div>
+
+    ${verSetores ? `<h2>Setores</h2>
+    <div class="setores">${setoresVis.map((st) => cartaoSetor(st, db.setores.indexOf(st))).join('') || '<p class="vazio">Seu setor ainda não foi definido.</p>'}</div>
     ${editaCronograma() ? `<form class="grade" id="novoSetor" style="margin-top:.75rem"><label>Novo setor <input name="nome" required></label>
       <div style="align-self:end"><button class="btn sec">Adicionar setor</button></div></form>` : ''}
-    ${orfaos.length ? `<p class="info" style="margin-top:1rem">Sem superior definido: ${orfaos.map((p) => esc(p.nome)).join(', ')}. Cadastre o superior e depois edite a pessoa.</p>` : ''}
+    <h2>Seções</h2>
+    <p class="sub">Em cada seção as crianças começam na Recepção e passam por todos os setores, levadas pelos professores de rebanho.</p>
+    ${db.secoes.map(fluxo).join('')}` : ''}
+
+    <h2>Pessoas cadastradas</h2>
+    ${orfaos.length ? `<p class="info">Sem superior definido: ${orfaos.map((p) => esc(p.nome)).join(', ')}.</p>` : ''}
+    <div class="rolar"><table class="tabela">
+      <tr><th>Nome</th><th>Função</th><th>Onde atua</th><th>Subordinado a</th><th>Telefone</th><th></th></tr>
+      ${pessoas.map((p) => `<tr><td>${esc(p.nome)}</td><td>${PAPEIS[p.papel]}</td><td>${esc(textoAtuacao(p) || '—')}</td>
+        <td>${esc(nomePessoa(p.superiorId))}</td><td>${esc(p.telefone || '—')}</td>
+        <td>${editavel(p) ? `<a class="btn sec" href="#/pessoa/${p.id}">Editar</a>` : ''}</td></tr>`).join('') || vazioLinha(6, 'Ninguém cadastrado.')}
+    </table></div>
+
     ${pode.length ? `<h2>Cadastrar pessoa</h2>
     <form class="grade" id="nova">${formPessoa(novoForm, pode)}<div style="align-self:end"><button class="btn">Cadastrar</button></div></form>` : ''}`;
   const fs = document.getElementById('novoSetor');
   if (fs) fs.onsubmit = (ev) => {
     ev.preventDefault();
-    const nome = ev.target.nome.value.trim();
-    if (db.setores.some((x) => x.nome.toLowerCase() === nome.toLowerCase())) return aviso('Setor já existe');
-    db.setores.push({ id: `st${Date.now()}`, nome });
+    const nomeSetor = ev.target.nome.value.trim();
+    if (db.setores.some((x) => x.nome.toLowerCase() === nomeSetor.toLowerCase())) return aviso('Setor já existe');
+    db.setores.push({ id: `st${Date.now()}`, nome: nomeSetor });
     salvar('Setor adicionado');
     equipe();
   };
@@ -712,7 +824,8 @@ function pessoaPagina(id) {
   }
   const subs = db.pessoas.filter((x) => x.superiorId === p.id);
   app.innerHTML = `
-    <h1>${esc(p.nome)}</h1>
+    <p><a href="#/equipe">← Equipes e Setores</a></p>
+    <h1>${novo ? '' : 'Editar: '}${esc(p.nome)}</h1>
     <p class="sub">${novo ? `Novo membro · cadastro inicial em ${fmt(p.cadastroEm)}${p.interesse ? ` · interesse: ${esc(p.interesse)}` : ''}<br>Defina função, setor e subordinação.`
       : `${PAPEIS[p.papel]} · subordinado a ${esc(nomePessoa(p.superiorId))}`}</p>
     <form class="grade" id="editar">${formPessoa(p, pode)}<div style="align-self:end"><button class="btn">Salvar</button></div></form>
@@ -761,15 +874,16 @@ function rebanhos(sid) {
     [new Set(daSecao.map((r) => r.coordenadorId).filter(Boolean)).size, 'coordenadoras'], [soma(daSecao), 'crianças ativas']];
   app.innerHTML = `
     <h1>Rebanhos</h1>
-    <p class="sub">Cada turma tem os rebanhos Azul, Verde, Amarelo e Vermelho. Professores e coordenadoras aparecem aqui assim que são cadastrados na Equipe.</p>
+    <p class="sub">Cada turma tem os rebanhos Azul, Verde, Amarelo e Vermelho. Professores e coordenadoras aparecem aqui assim que são cadastrados.</p>
     <div class="acoes">${secoes.map((x) => `<a class="btn ${x.id === s.id ? '' : 'sec'}" href="#/rebanhos/${x.id}">${esc(x.nome)} · ${esc(x.horario)}</a>`).join('')}</div>
     <div class="cards">${cards.map(([n, t]) => `<div class="card"><div class="num">${n}</div><div class="rot">${t}</div></div>`).join('')}</div>
     <div class="turmas">${[...TURMAS, ''].map((t) => { const rs = daSecao.filter((r) => (r.turma || '') === t);
       if (!rs.length) return '';
+      const coords = [...new Set(rs.map((r) => r.coordenadorId).filter(Boolean))].map(nomePessoa);
       return `<div class="card"><h3>${t ? `Turma ${t}` : 'Sem turma'} <span class="vazio pequeno">· ${soma(rs)} criança(s)</span></h3>
+        <p class="coord">Coordenadora: <strong>${esc(coords.join(', ') || 'a definir')}</strong></p>
         ${rs.map((r) => `<a class="linha${emUso(r) ? '' : ' livre'}" href="#/rebanho/${r.id}">${bolinha(r)}<span><strong>${CORES[r.cor]?.[0] ?? esc(r.nome)}</strong>
           <br>Professor: ${esc(r.professores.map(nomePessoa).join(', ') || '—')}
-          <br>Coordenadora: ${esc(nomePessoa(r.coordenadorId))}
           <br>Crianças ativas: ${ativas(r)}</span></a>`).join('')}</div>`; }).join('')}</div>`;
 }
 
@@ -787,15 +901,20 @@ function rebanhoPagina(id) {
       <label>Coordenadora de rebanho <select name="coordenadorId">${opcoes(coords.map((p) => [p.id, p.nome]), r.coordenadorId, '—')}</select></label>
       <div class="checks"><span class="vazio">Professores:</span>${profs.length ? profs.map((p) => `<label class="check">
         <input type="checkbox" name="professores" data-lista value="${p.id}" ${r.professores.includes(p.id) ? 'checked' : ''}> ${esc(p.nome)}</label>`).join('')
-        : '<span class="vazio">nenhum professor cadastrado na Equipe</span>'}</div>
+        : '<span class="vazio">nenhum professor cadastrado</span>'}</div>
       <div style="align-self:end"><button class="btn">Salvar</button></div></form>
     ${cs.length ? `<h2>Crianças</h2><ul class="lista">${cs.map((c) => `<li><a href="#/crianca/${c.id}">${esc(c.nome)}</a></li>`).join('')}</ul>` : ''}`;
   document.getElementById('editar').onsubmit = (ev) => {
     ev.preventDefault();
     r.coordenadorId = ev.target.coordenadorId.value || null;
     r.professores = [...ev.target.querySelectorAll('input[name=professores]:checked')].map((c) => c.value);
-    // O cadastro do professor passa a apontar para este rebanho
-    r.professores.map(pessoa).forEach((p) => Object.assign(p, { secaoId: r.secaoId, turma: r.turma, cor: r.cor }));
+    // O cadastro de cada professor ganha (ou perde) a linha deste rebanho
+    const deste = (a) => a.setor === SETOR_PROFESSOR && a.secaoId === r.secaoId && a.turma === r.turma && a.cor === r.cor;
+    for (const p of profs) {
+      const as = atuacoes(p).filter((a) => !deste(a));
+      if (r.professores.includes(p.id)) as.push({ secaoId: r.secaoId, setor: SETOR_PROFESSOR, turma: r.turma, cor: r.cor });
+      Object.assign(p, { atuacoes: as, secaoId: undefined, setor: undefined, turma: undefined, cor: undefined });
+    }
     salvar('Rebanho atualizado');
     location.hash = `#/rebanhos/${r.secaoId}`;
   };
@@ -804,14 +923,14 @@ function rebanhoPagina(id) {
 // ---------- Recepção ----------
 // Recepção da seção: cadastro das crianças e presença no Kids/culto.
 function recepcao(eid) {
-  const s = secao(eu()?.secaoId);
+  const ss = secoesRecepcao().map(secao).filter(Boolean);
   const rs = meusAtivos();
   const datas = ordenados().filter((e) => e.tipo !== 'sem_aula');
   const e = datas.find((x) => x.id === Number(eid)) || [...datas].reverse().find((x) => x.data <= hoje()) || datas[0];
   const cs = (r) => db.criancas.filter((c) => c.ativa && c.rebanhoId === r.id);
   const marcadas = (r) => cs(r).filter((c) => db.registros[c.id]?.[e.id]?.k).length;
   app.innerHTML = `
-    <h1>Recepção${s ? ` — ${esc(s.nome)} (${esc(s.horario)})` : ''}</h1>
+    <h1>Recepção${ss.length ? ` — ${esc(ss.map((x) => `${x.nome} (${x.horario})`).join(', '))}` : ''}</h1>
     <p class="sub">A recepção cadastra as crianças e marca presença e faltas. Versículos e meditações ficam com os professores.</p>
     <div class="acoes"><a class="btn" href="#/criancas">Cadastrar ou editar criança</a></div>
     ${e ? `<label class="perfil" style="margin-bottom:.5rem">Data <select id="data">${opcoes(datas.map((x) => [x.id, `${fmt(x.data)}${x.tema ? ` · ${x.tema}` : ''}`]), e.id)}</select></label>` : ''}
@@ -827,32 +946,57 @@ function recepcao(eid) {
 }
 
 // ---------- Meu setor (líderes e membros) ----------
-function meuSetor() {
+// Programação própria do setor: a liderança cadastra data e tema (sem depender do cronograma).
+function meuSetor(sid) {
   const p = eu();
-  const st = db.setores.find((x) => x.nome === p?.setor);
-  if (!st) return (app.innerHTML = `<h1>Meu setor</h1><p class="info">Seu setor ainda não foi definido. Fale com ${esc(nomePessoa(p?.superiorId))}.</p>`);
-  const gente = db.pessoas.filter((x) => x.setor === st.nome && LIDERES.includes(x.papel))
+  const meus = db.setores.filter((st) => setoresDe(p).includes(st.nome));
+  if (!meus.length) return (app.innerHTML = `<h1>Meu setor</h1><p class="info">Seu setor ainda não foi definido. Fale com ${esc(nomePessoa(p?.superiorId))}.</p>`);
+  const st = meus.find((x) => x.id === sid) || meus[0];
+  const edita = ['lider_geral', 'lider_secao'].includes(p.papel);
+  const secoesNoSetor = (x) => atuacoes(x).filter((a) => a.setor === st.nome).map((a) => secao(a.secaoId)?.nome).filter(Boolean).join(', ');
+  const minhas = atuacoes(p).filter((a) => a.setor === st.nome).map((a) => a.secaoId).filter(Boolean);
+  const gente = db.pessoas.filter((x) => LIDERES.includes(x.papel) && setoresDe(x).includes(st.nome))
     .sort((a, b) => LIDERES.indexOf(a.papel) - LIDERES.indexOf(b.papel) || a.nome.localeCompare(b.nome));
-  const s = secao(p.secaoId);
-  let n = 0;
+  const prog = [...(db.programacoes?.[st.id] || [])].sort((a, b) => a.data.localeCompare(b.data));
   app.innerHTML = `
+    ${meus.length > 1 ? `<div class="acoes">${meus.map((x) => `<a class="btn ${x === st ? '' : 'sec'}" href="#/setor/${x.id}">${esc(x.nome)}</a>`).join('')}</div>` : ''}
     <h1>${esc(st.nome)}</h1>
-    <p class="sub">${PAPEIS[p.papel]}${s ? ` · ${esc(s.nome)} (${esc(s.horario)})` : ''}
+    <p class="sub">${PAPEIS[p.papel]}${secoesNoSetor(p) ? ` · ${esc(secoesNoSetor(p))}` : ''}
       <br>Liderança: ${esc(ancestrais(p).map((x) => `${x.nome} (${PAPEIS[x.papel]})`).join(' → ') || '—')}</p>
     ${st.nome === SETOR_RECEPCAO ? '<p class="info">Use a aba <a href="#/recepcao">Recepção</a> para cadastrar crianças e marcar presença.</p>' : ''}
+    <h2>Programação do setor</h2>
+    <div class="rolar"><table class="tabela">
+      <tr><th>Data</th><th>Seção</th><th>Tema</th>${edita ? '<th></th>' : ''}</tr>
+      ${prog.map((x) => `<tr><td>${fmt(x.data)}</td><td>${esc(secao(x.secaoId)?.nome ?? 'Todas')}</td><td>${esc(x.tema)}</td>
+        ${edita ? `<td><button class="btn sec" data-excluir="${x.id}">Excluir</button></td>` : ''}</tr>`).join('') || vazioLinha(edita ? 4 : 3, 'Nenhum tema cadastrado.')}
+    </table></div>
+    ${edita ? `<form class="grade" id="novoTema" style="margin-top:.75rem">
+      <label>Data <input type="date" name="data" required></label>
+      <label>Seção <select name="secaoId">${opcoes(db.secoes.map((x) => [x.id, `${x.nome} (${x.horario})`]), minhas[0], 'Todas as seções')}</select></label>
+      <label>Tema <input name="tema" required></label>
+      <div style="align-self:end"><button class="btn">Adicionar</button></div></form>` : ''}
     <h2>Equipe do setor</h2>
     <div class="rolar"><table class="tabela">
       <tr><th>Nome</th><th>Função</th><th>Seção</th><th>Telefone</th></tr>
       ${gente.map((x) => `<tr><td>${x.id === p.id ? `<strong>${esc(x.nome)}</strong> (você)` : esc(x.nome)}</td><td>${PAPEIS[x.papel]}</td>
-        <td>${esc(secao(x.secaoId)?.nome ?? '—')}</td><td>${esc(x.telefone || '—')}</td></tr>`).join('')}
-    </table></div>
-    <h2>Programação do setor</h2>
-    <p class="sub">Definida pelos pastores no cronograma.</p>
-    <div class="rolar"><table class="tabela">
-      <tr><th>Nº</th><th>Data</th><th>Tema</th><th>Versículo</th><th>${esc(st.nome)}</th></tr>
-      ${ordenados().filter((e) => e.tipo !== 'sem_aula').map((e) => `<tr><td>${++n}</td><td>${fmt(e.data)}</td><td>${esc(e.tema || '—')}</td>
-        <td>${esc(e.versiculo || '—')}</td><td>${esc(e.setores?.[st.id] || '—')}</td></tr>`).join('')}
+        <td>${esc(secoesNoSetor(x) || '—')}</td><td>${esc(x.telefone || '—')}</td></tr>`).join('')}
     </table></div>`;
+  if (!edita) return;
+  document.getElementById('novoTema').onsubmit = (ev) => {
+    ev.preventDefault();
+    const d = dadosDoForm(ev.target);
+    db.programacoes ??= {};
+    (db.programacoes[st.id] ??= []).push({ id: `pg${Date.now()}`, data: d.data, secaoId: d.secaoId || null, tema: d.tema.trim() });
+    salvar('Tema cadastrado');
+    meuSetor(st.id);
+  };
+  app.querySelectorAll('[data-excluir]').forEach((b) => {
+    b.onclick = () => {
+      db.programacoes[st.id] = db.programacoes[st.id].filter((x) => x.id !== b.dataset.excluir);
+      salvar('Tema excluído');
+      meuSetor(st.id);
+    };
+  });
 }
 
 // ---------- Lançamentos (professores) ----------
@@ -1269,7 +1413,7 @@ function atualizar(local, b) {
     || local.criancas.some((c) => c.rebanhoId === r.id));
   for (const r of b.rebanhos) if (!local.rebanhos.some((x) => x.id === r.id)) local.rebanhos.push(structuredClone(r));
   const pe1 = local.pessoas.find((p) => p.id === 'pe1');
-  if (pe1 && !pe1.setor) Object.assign(pe1, { setor: 'Professores de Rebanho', secaoId: 's2', turma: '2A', cor: 'verde' });
+  if (pe1 && !pe1.setor && !pe1.atuacoes) Object.assign(pe1, { setor: 'Professores de Rebanho', secaoId: 's2', turma: '2A', cor: 'verde' });
   for (const r of local.rebanhos) {
     r.cor ??= ORDEM_COR.find((k) => r.nome?.toLowerCase().includes(k)) ?? 'verde';
     if (r.id === 'r1' && !r.secaoId) r.secaoId = 's2';

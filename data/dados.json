@@ -1,5 +1,5 @@
 {
- "versao": 6,
+ "versao": 7,
  "ministerio": "Nova Kids e Infantil",
  "secoes": [
   {
@@ -3647,6 +3647,7 @@
  ],
  "notaMaxima": 10,
  "notas": {},
+ "programacoes": {},
  "alertas": [
   "JULIANA ARCANJO DIAS CAVALCANTE: 18 faltas antes da entrada (encontro 19) ignoradas",
   "LORENZO NASCIMENTO GAMA: 18 faltas antes da entrada (encontro 19) ignoradas",
