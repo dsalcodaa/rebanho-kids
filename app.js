@@ -1,5 +1,5 @@
 import {
-  avaliarDesafio, encontrosRealizados, resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio,
+  avaliarDesafio, encontrosRealizados, mediaNotas, mediaTurma, resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio,
 } from './regras.js';
 
 // shortcut: dados ficam no localStorage de cada navegador; trocar por Supabase na próxima etapa.
@@ -41,8 +41,11 @@ function dadosDoForm(form) {
 }
 
 // ---------- Painel ----------
+const nota = (x) => (x == null ? '—' : Number(x).toLocaleString('pt-BR', { maximumFractionDigits: 1 }));
+
 function painel() {
   const ativas = db.criancas.filter((c) => c.ativa);
+  const inativas = db.criancas.filter((c) => !c.ativa);
   const feitos = encontrosRealizados(db);
   const semLanc = ordenados().filter((e) => e.data < hoje() && !feitos.has(e.id));
   const resumos = ativas.map((c) => resumoCrianca(db.registros[c.id] || {}));
@@ -50,16 +53,22 @@ function painel() {
     const v = resumos.map((r) => r[k].pct).filter((x) => x != null);
     return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
   };
-  const tops = ativas.map((c) => ({ c, tops: topsDaCrianca(db, c) })).sort((a, b) => b.tops.length - a.tops.length);
-  const premiados = tops.filter((t) => t.tops.length >= db.topsPremiacao);
+  // Todas as crianças (ativas primeiro), com frequência, provas e TOPs
+  const linhas = [...ativas, ...inativas].map((c) => ({
+    c, r: resumoCrianca(db.registros[c.id] || {}), tops: topsDaCrianca(db, c), notas: db.notas[c.id] || {},
+  }));
+  const premiados = linhas.filter((l) => l.tops.length >= db.topsPremiacao);
+  const prof = db.professor;
 
   app.innerHTML = `
     <h1>${esc(db.turma)}</h1>
+    ${prof ? `<p class="sub">Professor: <strong>${esc(prof.nome)}</strong> · ${idade(prof.nascimento)} anos · nascido em ${fmt(prof.nascimento)}</p>` : ''}
     <div class="cards">
       <div class="card"><div class="num">${ativas.length}</div><div class="rot">crianças ativas</div></div>
-      <div class="card"><div class="num">${feitos.size}/${db.encontros.length}</div><div class="rot">encontros realizados</div></div>
+      <div class="card"><div class="num">${inativas.length}</div><div class="rot">crianças inativas</div></div>
       <div class="card"><div class="num">${pct(media('kids'))}</div><div class="rot">frequência média no Kids</div></div>
       <div class="card"><div class="num">${pct(media('culto'))}</div><div class="rot">frequência média no culto</div></div>
+      <div class="card"><div class="num">${nota(mediaTurma(db, ativas))}</div><div class="rot">média das provas (0 a ${db.notaMaxima})</div></div>
       <div class="card"><div class="num">${premiados.length}</div><div class="rot">com ${db.topsPremiacao}+ TOPs (premiação)</div></div>
     </div>
 
@@ -74,12 +83,18 @@ function painel() {
       }).join('')}
     </table></div>
 
-    <h2>Premiação de fim de ano (${db.topsPremiacao} TOPs)</h2>
+    <h2>Todas as crianças</h2>
     <div class="rolar"><table class="tabela">
-      <tr><th>Criança</th><th>TOPs</th><th>Conquistados</th></tr>
-      ${tops.map((t) => `<tr><td><a href="#/crianca/${t.c.id}">${esc(t.c.nome)}</a></td>
-        <td>${t.tops.length >= db.topsPremiacao ? `<span class="tag top">${t.tops.length} — premiada</span>` : t.tops.length}</td>
-        <td>${t.tops.map((d) => esc(d.nome)).join(', ') || '—'}</td></tr>`).join('')}
+      <tr><th>Criança</th><th>Kids</th><th>Culto</th>${db.provas.map((p) => `<th>${esc(p.nome)}</th>`).join('')}<th>Média</th><th>TOPs</th><th>Conquistados</th></tr>
+      ${linhas.map((l) => `<tr><td><a href="#/crianca/${l.c.id}">${esc(l.c.nome)}</a> ${l.c.ativa ? '' : '<span class="tag fora">inativa</span>'}</td>
+        <td>${pct(l.r.kids.pct)}</td><td>${pct(l.r.culto.pct)}</td>
+        ${db.provas.map((p) => `<td>${nota(l.notas[p.id])}</td>`).join('')}
+        <td><strong>${nota(mediaNotas(l.notas))}</strong></td>
+        <td>${l.tops.length >= db.topsPremiacao ? `<span class="tag top">${l.tops.length} — premiada</span>` : l.tops.length}</td>
+        <td>${l.tops.map((d) => esc(d.nome)).join(', ') || '—'}</td></tr>`).join('')}
+      <tr><td><strong>Média da turma</strong></td><td>${pct(media('kids'))}</td><td>${pct(media('culto'))}</td>
+        ${db.provas.map((p) => `<td>${nota(mediaNotas(Object.fromEntries(ativas.map((c) => [c.id, db.notas[c.id]?.[p.id]]))))}</td>`).join('')}
+        <td><strong>${nota(mediaTurma(db, ativas))}</strong></td><td></td><td></td></tr>
     </table></div>
 
     <h2>Para conferir</h2>
@@ -233,7 +248,15 @@ function crianca(id) {
       <div class="card"><div class="num">${r.versiculos}</div><div class="rot">pontos de versículo</div></div>
       <div class="card"><div class="num">${r.meditacoes.completas}/${r.meditacoes.total}</div><div class="rot">meditações completas</div></div>
       <div class="card"><div class="num">${topsDaCrianca(db, c).length}</div><div class="rot">TOPs</div></div>
+      <div class="card"><div class="num">${nota(mediaNotas(db.notas[c.id]))}</div><div class="rot">média das provas</div></div>
     </div>
+
+    <h2>Notas de prova</h2>
+    <form class="grade" id="notas">
+      ${db.provas.map((p) => `<label>${esc(p.nome)} (0 a ${db.notaMaxima})
+        <input type="number" name="${p.id}" min="0" max="${db.notaMaxima}" step="0.1" value="${db.notas[c.id]?.[p.id] ?? ''}"></label>`).join('')}
+      <div style="align-self:end"><button class="btn">Salvar notas</button></div>
+    </form>
 
     <h2>Desafios</h2>
     <div class="rolar"><table class="tabela"><tr><th>Desafio</th><th>Resultado</th><th>Versículos</th><th>Motivo</th></tr>
@@ -255,6 +278,15 @@ function crianca(id) {
       ? '<button class="btn perigo" id="inativar">Inativar criança</button>'
       : '<button class="btn sec" id="reativar">Reativar criança</button>'}</div>`;
 
+  document.getElementById('notas').onsubmit = (ev) => {
+    ev.preventDefault();
+    // Campo vazio = prova ainda não lançada (diferente de nota zero)
+    const n = Object.fromEntries(Object.entries(dadosDoForm(ev.target)).filter(([, v]) => v !== '').map(([k, v]) => [k, Number(v)]));
+    if (Object.values(n).some((v) => !(v >= 0 && v <= db.notaMaxima))) return aviso(`Notas devem ficar entre 0 e ${db.notaMaxima}`);
+    db.notas[c.id] = n;
+    salvar('Notas salvas');
+    crianca(id);
+  };
   document.getElementById('editar').onsubmit = (ev) => {
     ev.preventDefault();
     Object.assign(c, dadosDoForm(ev.target));
@@ -381,7 +413,18 @@ function dados() {
       <button class="btn" id="exportar">Exportar backup (JSON)</button>
       <label class="btn sec">Importar backup <input type="file" id="importar" accept=".json" hidden></label>
       <button class="btn perigo" id="restaurar">Voltar aos dados da planilha</button>
-    </div>`;
+    </div>
+    <h2>Professor</h2>
+    <form class="grade" id="professor">
+      <label>Nome <input name="nome" required value="${esc(db.professor?.nome)}"></label>
+      <label>Data de nascimento <input type="date" name="nascimento" value="${esc(db.professor?.nascimento)}"></label>
+      <div style="align-self:end"><button class="btn">Salvar professor</button></div>
+    </form>`;
+  document.getElementById('professor').onsubmit = (ev) => {
+    ev.preventDefault();
+    db.professor = dadosDoForm(ev.target);
+    salvar('Professor atualizado');
+  };
   document.getElementById('exportar').onclick = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 1)], { type: 'application/json' }));
@@ -392,7 +435,7 @@ function dados() {
     try {
       const novo = JSON.parse(await ev.target.files[0].text());
       if (!Array.isArray(novo.criancas) || !novo.registros) throw new Error('formato');
-      db = novo;
+      db = atualizar(novo, base);
       salvar('Backup importado');
     } catch { aviso('Arquivo inválido'); }
   };
@@ -415,7 +458,16 @@ function rotear() {
   window.scrollTo(0, 0);
 }
 
+// Dados salvos numa versão anterior: acrescenta campos e desafios novos sem perder os lançamentos.
+function atualizar(local, base) {
+  for (const [k, v] of Object.entries(base)) if (!(k in local)) local[k] = v;
+  for (const d of base.desafios) if (!local.desafios.some((x) => x.id === d.id)) local.desafios.push(d);
+  local.versao = base.versao;
+  return local;
+}
+
 const salvo = localStorage.getItem(CHAVE);
-db = salvo ? JSON.parse(salvo) : await (await fetch('data/dados.json', { cache: 'no-store' })).json();
+const base = await (await fetch('data/dados.json', { cache: 'no-store' })).json();
+db = salvo ? atualizar(JSON.parse(salvo), base) : base;
 window.addEventListener('hashchange', rotear);
 rotear();

@@ -15,7 +15,9 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Desafio (3 ou 8 semanas): para ganhar o TOP, a criança precisa ir ao Kids e ao culto em todas as semanas,
   com no máximo 1 falta justificada (3 semanas) ou 2 (8 semanas) em cada um, fazer todas as meditações
   e somar os pontos de versículo do desafio. Quem entrou depois do início fica fora.
-- Premiação de fim de ano: 3 TOPs (configurável).
+- Lançamento em branco não conta como falta: o desafio fica "em andamento" até tudo ser lançado.
+- Premiação de fim de ano: 3 TOPs (configurável). TOP 3: 06/09 a 18/10 (7 semanas, 2 FJ, 21 pontos).
+- Provas: 3 por ano, nota de 0 a 10, lançadas na página da criança. Média = média simples das provas lançadas.
 
 ## Comandos
 ```

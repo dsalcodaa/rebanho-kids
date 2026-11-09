@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { avaliarDesafio, resumoCrianca, topsDaCrianca, versiculosDoDesafio } from './regras.js';
+import { avaliarDesafio, mediaNotas, mediaTurma, resumoCrianca, topsDaCrianca, versiculosDoDesafio } from './regras.js';
 
 const db = JSON.parse(readFileSync(new URL('./data/dados.json', import.meta.url), 'utf-8'));
 const porNome = (n) => db.criancas.find((c) => c.nome.startsWith(n));
@@ -31,6 +31,20 @@ test('versículos exigidos = soma dos máximos das semanas', () => {
   assert.equal(versiculosDoDesafio(db, db.desafios[0]), 9);
   assert.equal(versiculosDoDesafio(db, db.desafios[1]), 27);
   assert.equal(versiculosDoDesafio(db, db.desafios[2]), 24);
+});
+
+test('TOP 3 vai de 06/09 a 18/10 e segue em andamento sem os lançamentos de outubro', () => {
+  const d = db.desafios.find((x) => x.nome === 'TOP 3');
+  assert.equal(d.semanas, 7);
+  assert.equal(db.encontros.find((e) => e.id === d.inicio).data, '2026-09-06');
+  assert.equal(avaliarDesafio(db, d, porNome('HÉLIO')).status, 'andamento');
+});
+
+test('médias de provas ignoram notas não lançadas', () => {
+  assert.equal(mediaNotas({ p1: 8, p2: 10 }), 9);
+  assert.equal(mediaNotas({}), null);
+  const t = { ...db, notas: { a: { p1: 6 }, b: { p1: 10, p2: 8 } } };
+  assert.equal(mediaTurma(t, [{ id: 'a' }, { id: 'b' }]), 8);
 });
 
 test('ganhadores dos desafios 2026', () => {

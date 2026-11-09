@@ -51,28 +51,46 @@ export function avaliarDesafio(db, d, crianca) {
 
   const regs = db.registros[crianca.id] || {};
   const feitos = encontrosRealizados(db);
-  const pendentes = semanas.filter((e) => !feitos.has(e.id)).length;
   const r = semanas.map((e) => regs[e.id] || {});
   const motivos = [];
+  // Campo em branco = ainda não lançado: deixa o desafio em andamento, não conta como falta.
+  const campos = d.meditacao ? ['k', 'c', 'm'] : ['k', 'c'];
+  const semLancamento = r.reduce((s, x) => s + campos.filter((f) => x[f] === undefined).length, 0);
 
   for (const [campo, nome] of [['k', 'Kids'], ['c', 'Culto']]) {
     const fj = r.filter((x) => x[campo] === 'FJ').length;
-    const faltas = r.filter((x, i) => feitos.has(semanas[i].id) && !PRESENTE[campo].includes(x[campo])).length;
+    const faltas = r.filter((x) => x[campo] !== undefined && !PRESENTE[campo].includes(x[campo])).length;
     if (faltas) motivos.push(`${nome}: ${faltas} falta(s)`);
     if (fj > Number(d.fj)) motivos.push(`${nome}: ${fj} faltas justificadas (máximo ${d.fj})`);
   }
   if (d.meditacao) {
-    const inc = r.filter((x, i) => feitos.has(semanas[i].id) && !MEDITACAO_COMPLETA.includes(x.m)).length;
+    const inc = r.filter((x) => x.m !== undefined && !MEDITACAO_COMPLETA.includes(x.m)).length;
     if (inc) motivos.push(`Meditação: ${inc} não completa(s)`);
   }
+  // Versículo em branco conta 0; só cobra o total depois que todas as semanas aconteceram.
+  const futuras = semanas.filter((e) => !feitos.has(e.id)).length;
   const pontos = r.reduce((s, x) => s + (x.v || 0), 0);
-  if (!pendentes && pontos < Number(d.versiculosMin)) motivos.push(`Versículos: ${pontos} de ${d.versiculosMin}`);
+  if (!futuras && pontos < Number(d.versiculosMin)) motivos.push(`Versículos: ${pontos} de ${d.versiculosMin}`);
 
   if (motivos.length) return { status: 'nao', motivos, pontos };
-  if (pendentes) return { status: 'andamento', motivos: [`faltam ${pendentes} semana(s)`], pontos };
+  if (futuras || semLancamento) {
+    return { status: 'andamento', motivos: [`faltam ${futuras} semana(s), ${semLancamento} lançamento(s) em branco`], pontos };
+  }
   return { status: 'top', motivos: [], pontos };
 }
 
 export function topsDaCrianca(db, crianca) {
   return db.desafios.filter((d) => avaliarDesafio(db, d, crianca).status === 'top');
+}
+
+// Média simples das provas lançadas (campo vazio = ainda não lançada, fica fora da média).
+export function mediaNotas(notas = {}) {
+  const v = Object.values(notas).filter((x) => typeof x === 'number');
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+
+// Média da turma = média de todas as notas lançadas das crianças informadas.
+export function mediaTurma(db, criancas) {
+  return mediaNotas(Object.fromEntries(criancas.flatMap((c) =>
+    Object.entries(db.notas?.[c.id] || {}).map(([p, n]) => [`${c.id}-${p}`, n]))));
 }

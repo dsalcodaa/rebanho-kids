@@ -96,7 +96,8 @@ def main(caminho):
                     alertas.append(f"{nome}: {v} pontos de versículo em {e['data']} (máximo {vmax[str(e['id'])]})")
 
     dados = {
-        "versao": 1,
+        "versao": 2,
+        "professor": {"nome": "Pedro Henrique Andrade e Paiva", "nascimento": "2001-03-20"},
         "turma": "Kids 2A — Rebanho Verde",
         "criancas": criancas,
         "encontros": [{"id": e["id"], "data": e["data"]} for e in encontros],
@@ -106,8 +107,13 @@ def main(caminho):
             {"id": "d1", "nome": "TOP 1", "inicio": 3, "semanas": 3, "fj": 1, "versiculosMin": 9, "meditacao": True},
             {"id": "d2", "nome": "PALAVRA FEST", "inicio": 8, "semanas": 3, "fj": 1, "versiculosMin": 27, "meditacao": True},
             {"id": "d3", "nome": "TOP 2", "inicio": 11, "semanas": 8, "fj": 2, "versiculosMin": 24, "meditacao": True},
+            # TOP 3: 06/09 a 18/10 (7 encontros); 2 FJ e 3 pontos de versículo por semana a confirmar
+            {"id": "d4", "nome": "TOP 3", "inicio": 26, "semanas": 7, "fj": 2, "versiculosMin": 21, "meditacao": True},
         ],
         "topsPremiacao": 3,
+        "provas": [{"id": "p1", "nome": "1ª prova"}, {"id": "p2", "nome": "2ª prova"}, {"id": "p3", "nome": "3ª prova"}],
+        "notaMaxima": 10,
+        "notas": {},
         "alertas": alertas,
     }
     destino = Path(__file__).resolve().parent.parent / "data" / "dados.json"

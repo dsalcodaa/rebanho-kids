@@ -1,5 +1,9 @@
 {
- "versao": 1,
+ "versao": 2,
+ "professor": {
+  "nome": "Pedro Henrique Andrade e Paiva",
+  "nascimento": "2001-03-20"
+ },
  "turma": "Kids 2A — Rebanho Verde",
  "criancas": [
   {
@@ -1770,9 +1774,34 @@
    "fj": 2,
    "versiculosMin": 24,
    "meditacao": true
+  },
+  {
+   "id": "d4",
+   "nome": "TOP 3",
+   "inicio": 26,
+   "semanas": 7,
+   "fj": 2,
+   "versiculosMin": 21,
+   "meditacao": true
   }
  ],
  "topsPremiacao": 3,
+ "provas": [
+  {
+   "id": "p1",
+   "nome": "1ª prova"
+  },
+  {
+   "id": "p2",
+   "nome": "2ª prova"
+  },
+  {
+   "id": "p3",
+   "nome": "3ª prova"
+  }
+ ],
+ "notaMaxima": 10,
+ "notas": {},
  "alertas": [
   "JULIANA ARCANJO DIAS CAVALCANTE: 18 faltas antes da entrada (encontro 19) ignoradas",
   "LORENZO NASCIMENTO GAMA: 18 faltas antes da entrada (encontro 19) ignoradas",
