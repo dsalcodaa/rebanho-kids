@@ -130,3 +130,36 @@ export function rebanhosVisiveis(db, pessoa) {
     default: return [];
   }
 }
+
+// ---------- Indicadores do painel ----------
+// Frequência por mês ('k' Kids ou 'c' culto), somando as crianças informadas.
+export function frequenciaPorMes(db, criancas, campo) {
+  const dataDe = Object.fromEntries(db.encontros.map((e) => [e.id, e.data]));
+  const meses = {};
+  for (const c of criancas) {
+    for (const [id, r] of Object.entries(db.registros[c.id] || {})) {
+      if (!r[campo] || !dataDe[id]) continue;
+      const m = (meses[dataDe[id].slice(0, 7)] ??= { presencas: 0, total: 0 });
+      m.total += 1;
+      if (PRESENTE[campo].includes(r[campo])) m.presencas += 1;
+    }
+  }
+  return Object.entries(meses).sort().map(([mes, m]) => ({ mes, ...m, pct: m.presencas / m.total }));
+}
+
+// Sinais de alerta: frequência no Kids abaixo de 75% (com 4+ lançamentos) ou 3 últimas faltas seguidas.
+export function motivosAtencao(db, crianca) {
+  const regs = db.registros[crianca.id] || {};
+  const motivos = [];
+  const f = frequencia(regs, 'k');
+  if (f.total >= 4 && f.pct < 0.75) motivos.push(`frequência no Kids de ${Math.round(f.pct * 100)}%`);
+  const ultimas = [...db.encontros].sort((a, b) => b.data.localeCompare(a.data)).map((e) => regs[e.id]?.k).filter(Boolean).slice(0, 3);
+  if (ultimas.length === 3 && ultimas.every((k) => k === 'F')) motivos.push('3 últimas faltas seguidas');
+  return motivos;
+}
+
+// Pessoas (crianças ou equipe) que fazem aniversário no mês (1–12), ordenadas pelo dia.
+export function aniversariantes(pessoas, mes) {
+  return pessoas.filter((p) => p.nascimento && Number(p.nascimento.slice(5, 7)) === mes)
+    .sort((a, b) => a.nascimento.slice(8).localeCompare(b.nascimento.slice(8)));
+}

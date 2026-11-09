@@ -97,7 +97,7 @@ def main(caminho):
                     alertas.append(f"{nome}: {v} pontos de versículo em {e['data']} (máximo {vmax[str(e['id'])]})")
 
     dados = {
-        "versao": 3,
+        "versao": 4,
         "ministerio": "Nova Kids e Infantil",
         "secoes": [
             {"id": "s1", "nome": "1ª seção", "horario": "08:00 às 10:00"},
@@ -109,9 +109,22 @@ def main(caminho):
             {"id": "pe1", "nome": "Pedro Henrique Andrade e Paiva", "nascimento": "2001-03-20",
              "papel": "professor", "superiorId": None},
         ],
+        "setores": [
+            {"id": "st1", "nome": "História Bíblica"},
+            {"id": "st2", "nome": "Revisão e Retenção"},
+            {"id": "st3", "nome": "Momento Alegria"},
+            {"id": "st4", "nome": "Bíblia Intelecto"},
+        ],
+        # Cada seção tem os rebanhos Azul, Verde, Amarelo e Vermelho; o 2A Verde da planilha é o Verde da 2ª seção.
         "rebanhos": [
-            {"id": "r1", "nome": "Rebanho Verde", "turma": "2A", "secaoId": None,
+            {"id": "r1", "nome": "Rebanho Verde", "cor": "verde", "turma": "2A", "secaoId": "s2",
              "coordenadorId": None, "professores": ["pe1"]},
+        ] + [
+            {"id": f"r-{sec}-{cor}", "nome": f"Rebanho {cor.capitalize()}", "cor": cor, "turma": "",
+             "secaoId": sec, "coordenadorId": None, "professores": []}
+            for sec in ("s1", "s2", "s3", "s4")
+            for cor in ("azul", "verde", "amarelo", "vermelho")
+            if (sec, cor) != ("s2", "verde")
         ],
                 "criancas": criancas,
         "encontros": [{"id": e["id"], "data": e["data"], "tipo": "aula"} for e in encontros],

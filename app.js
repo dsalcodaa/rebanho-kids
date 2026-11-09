@@ -1,5 +1,6 @@
 import {
-  SUPERIOR, avaliarDesafio, descendentes, encontrosRealizados, mediaNotas, mediaTurma, rebanhosVisiveis,
+  SUPERIOR, aniversariantes, avaliarDesafio, descendentes, encontrosRealizados, frequenciaPorMes, mediaNotas, mediaTurma,
+  motivosAtencao, rebanhosVisiveis,
   resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio,
 } from './regras.js';
 
@@ -90,9 +91,13 @@ const editaCronograma = () => ['admin', 'pastor'].includes(papel());
 const pessoa = (id) => db.pessoas.find((p) => p.id === id);
 const nomePessoa = (id) => pessoa(id)?.nome ?? '—';
 const secao = (id) => db.secoes.find((s) => s.id === id);
-const meusRebanhos = () => rebanhosVisiveis(db, eu());
+const CORES = { azul: ['Azul', '#2f6fd6'], verde: ['Verde', '#2f9d55'], amarelo: ['Amarelo', '#e0b000'], vermelho: ['Vermelho', '#d23c32'] };
+const ORDEM_COR = Object.keys(CORES);
+const ordemRebanho = (a, b) => (a.secaoId ?? 'z').localeCompare(b.secaoId ?? 'z') || ORDEM_COR.indexOf(a.cor) - ORDEM_COR.indexOf(b.cor);
+const meusRebanhos = () => [...rebanhosVisiveis(db, eu())].sort(ordemRebanho);
 const rebanho = (id) => db.rebanhos.find((r) => r.id === id);
-const nomeRebanho = (r) => (r ? `${r.turma} — ${r.nome}` : 'Sem rebanho');
+const nomeRebanho = (r) => (r ? `${r.nome}${r.turma ? ` ${r.turma}` : ''} · ${secao(r.secaoId)?.nome ?? 'seção a definir'}` : 'Sem rebanho');
+const bolinha = (r) => (CORES[r?.cor] ? `<span class="cor" style="background:${CORES[r.cor][1]}"></span>` : '');
 const minhasCriancas = () => {
   const ids = new Set(meusRebanhos().map((r) => r.id));
   return db.criancas.filter((c) => ids.has(c.rebanhoId));
@@ -123,6 +128,18 @@ function montarTopo() {
 }
 
 // ---------- Painel ----------
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+// Barras simples de % por mês (rótulo do valor em cima, mês embaixo).
+function graficoMeses(titulo, dados) {
+  if (!dados.length) return `<div class="card"><strong>${titulo}</strong><p class="vazio">Sem lançamentos.</p></div>`;
+  return `<div class="card"><strong>${titulo}</strong>
+    <div class="barras" role="img" aria-label="${titulo}: ${dados.map((m) => `${MESES[+m.mes.slice(5) - 1]} ${pct(m.pct)}`).join(', ')}">
+      ${dados.map((m) => `<div class="barra" title="${m.presencas} de ${m.total}">
+        <span class="valor">${pct(m.pct)}</span><span class="trilho"><span class="col" style="height:${Math.round(m.pct * 100)}%"></span></span>
+        <span class="mes">${MESES[+m.mes.slice(5) - 1]}</span></div>`).join('')}
+    </div></div>`;
+}
 function painel(rid) {
   const visiveis = meusRebanhos();
   const escopo = rid ? visiveis.filter((r) => r.id === rid) : visiveis;
@@ -147,7 +164,7 @@ function painel(rid) {
   app.innerHTML = `
     ${visiveis.length > 1 ? `<label class="perfil" style="margin-bottom:.5rem">Rebanho
       <select id="filtro">${opcoes(visiveis.map((r) => [r.id, nomeRebanho(r)]), rid, 'Todos os rebanhos')}</select></label>` : ''}
-    <h1>${um ? `Kids ${esc(nomeRebanho(um))}` : esc(db.ministerio)}</h1>
+    <h1>${um ? `${bolinha(um)}Kids ${esc(nomeRebanho(um))}` : esc(db.ministerio)}</h1>
     ${um ? `<p class="sub">${um.professores.map((id) => { const p = pessoa(id);
       return `Professor: <strong>${esc(p?.nome)}</strong>${p?.nascimento ? ` · ${idade(p.nascimento)} anos · nascido em ${fmt(p.nascimento)}` : ''}`; }).join('<br>') || 'Sem professor'}
       <br>${sec ? `${esc(sec.nome)} (${esc(sec.horario)})` : 'Seção a definir'} · Coordenador: ${esc(nomePessoa(um.coordenadorId))}</p>` : ''}
@@ -161,11 +178,38 @@ function painel(rid) {
       <div class="card"><div class="num">${premiados.length}</div><div class="rot">com ${db.topsPremiacao}+ TOPs (premiação)</div></div>
     </div>
 
+    <h2>Frequência por mês</h2>
+    <div class="duas">${graficoMeses('Kids', frequenciaPorMes(db, ativas, 'k'))}${graficoMeses('Culto', frequenciaPorMes(db, ativas, 'c'))}</div>
+
+    <div class="duas">
+      <div><h2>Aniversariantes de ${MESES[new Date().getMonth()]}</h2>
+        <div class="card">${(() => {
+          const mes = new Date().getMonth() + 1;
+          const lista = [...aniversariantes(ativas, mes), ...aniversariantes(equipeVisivel(), mes)];
+          return lista.length ? `<ul class="lista">${lista.map((x) => `<li><strong>${x.nascimento.slice(8)}/${x.nascimento.slice(5, 7)}</strong>
+            ${esc(x.nome)} <span class="vazio">· faz ${idade(x.nascimento) + (x.nascimento.slice(5) > hoje().slice(5) ? 1 : 0)} anos${x.papel ? ` · ${PAPEIS[x.papel]}` : ''}</span></li>`).join('')}</ul>`
+            : '<p class="vazio">Ninguém faz aniversário este mês.</p>'; })()}</div></div>
+      <div><h2>Precisam de atenção</h2>
+        <div class="card">${(() => {
+          const lista = ativas.map((c) => ({ c, m: motivosAtencao(db, c) })).filter((x) => x.m.length);
+          return lista.length ? `<ul class="lista">${lista.map((x) => `<li><a href="#/crianca/${x.c.id}">${esc(x.c.nome)}</a>
+            <span class="vazio">· ${esc(x.m.join('; '))}</span></li>`).join('')}</ul>`
+            : '<p class="vazio">Nenhuma criança com frequência abaixo de 75% ou 3 faltas seguidas.</p>'; })()}</div></div>
+    </div>
+
+    <h2>Ranking de versículos</h2>
+    <div class="rolar"><table class="tabela">
+      <tr><th>#</th><th>Criança</th><th>Pontos</th><th>Meditações completas</th></tr>
+      ${ativas.map((c) => ({ c, r: resumoCrianca(db.registros[c.id] || {}) })).sort((a, b) => b.r.versiculos - a.r.versiculos).slice(0, 10)
+        .map((x, i) => `<tr><td>${i + 1}º</td><td><a href="#/crianca/${x.c.id}">${esc(x.c.nome)}</a></td><td>${x.r.versiculos}</td>
+          <td>${x.r.meditacoes.completas}/${x.r.meditacoes.total}</td></tr>`).join('') || '<tr><td colspan="4" class="vazio">Sem crianças.</td></tr>'}
+    </table></div>
+
     ${varios ? `<h2>Rebanhos</h2>
     <div class="rolar"><table class="tabela">
       <tr><th>Rebanho</th><th>Seção</th><th>Professores</th><th>Ativas</th><th>Kids</th><th>Média provas</th><th>Premiadas</th></tr>
       ${escopo.map((r) => { const cs = ativas.filter((c) => c.rebanhoId === r.id);
-        return `<tr><td><a href="#/painel/${r.id}">${esc(nomeRebanho(r))}</a></td><td>${esc(secao(r.secaoId)?.nome ?? '—')}</td>
+        return `<tr><td>${bolinha(r)}<a href="#/painel/${r.id}">${esc(r.nome)}${r.turma ? ` ${esc(r.turma)}` : ''}</a></td><td>${esc(secao(r.secaoId)?.nome ?? '—')}</td>
           <td>${esc(r.professores.map(nomePessoa).join(', ') || '—')}</td><td>${cs.length}</td><td>${pct(media(cs, 'kids'))}</td>
           <td>${nota(mediaTurma(db, cs))}</td><td>${cs.filter((c) => topsDaCrianca(db, c).length >= db.topsPremiacao).length}</td></tr>`; }).join('')}
     </table></div>` : ''}
@@ -215,12 +259,18 @@ function formCronograma(e) {
     <label>Tema da aula <input name="tema" value="${esc(e.tema)}"></label>
     <label>Versículo (referência) <input name="versiculo" value="${esc(e.versiculo)}" placeholder="Ex.: João 3:16"></label>
     <label>Pontos do versículo <input type="number" name="pontos" min="0" step="0.5" value="${e.id != null ? db.versiculoMax[e.id] ?? '' : ''}"></label>
-    <label>Meditação <input name="meditacao" value="${esc(e.meditacao)}"></label>`;
+    <label>Meditação <input name="meditacao" value="${esc(e.meditacao)}"></label>
+    ${db.setores.map((st) => `<label>${esc(st.nome)} <input name="setor_${st.id}" value="${esc(e.setores?.[st.id])}"></label>`).join('')}`;
 }
+
+// Programação de cada setor numa data, em linhas "Setor: conteúdo"
+const programaSetores = (e) => db.setores.filter((st) => e.setores?.[st.id])
+  .map((st) => `<strong>${esc(st.nome)}:</strong> ${esc(e.setores[st.id])}`).join('<br>');
 
 function lerCronograma(form, e) {
   const d = dadosDoForm(form);
   Object.assign(e, { data: d.data, tipo: d.tipo, tema: d.tema, versiculo: d.versiculo, meditacao: d.meditacao });
+  e.setores = Object.fromEntries(db.setores.map((st) => [st.id, d[`setor_${st.id}`]?.trim()]).filter(([, v]) => v));
   if (d.pontos === '') delete db.versiculoMax[e.id]; else db.versiculoMax[e.id] = Number(d.pontos);
 }
 
@@ -235,11 +285,11 @@ function cronograma() {
     <div class="cards">${db.secoes.map((s) => `<div class="card"><div class="num" style="font-size:1.1rem">${esc(s.nome)}</div><div class="rot">${esc(s.horario)}</div></div>`).join('')}</div>
     <h2>Programação</h2>
     <div class="rolar"><table class="tabela">
-      <tr><th>Nº</th><th>Data</th><th>Tipo</th><th>Tema</th><th>Versículo</th><th>Pontos</th><th>Meditação</th><th>Desafio</th>${pode ? '<th></th>' : ''}</tr>
+      <tr><th>Nº</th><th>Data</th><th>Tipo</th><th>Tema</th><th>Versículo</th><th>Pontos</th><th>Meditação</th><th>Setores</th><th>Desafio</th>${pode ? '<th></th>' : ''}</tr>
       ${ordenados().map((e) => `<tr><td>${e.tipo === 'sem_aula' ? '' : ++n}</td><td>${fmt(e.data)}</td>
         <td>${e.tipo === 'sem_aula' ? '<span class="tag fora">Sem programação</span>' : 'Kids'}</td>
         <td>${esc(e.tema || '—')}</td><td>${esc(e.versiculo || '—')}</td><td>${db.versiculoMax[e.id] ?? '—'}</td>
-        <td>${esc(e.meditacao || '—')}</td><td>${esc(desafiosDaData(e).map((d) => d.nome).join(', ') || '—')}</td>
+        <td>${esc(e.meditacao || '—')}</td><td>${programaSetores(e) || '—'}</td><td>${esc(desafiosDaData(e).map((d) => d.nome).join(', ') || '—')}</td>
         ${pode ? `<td><a class="btn sec" href="#/data/${e.id}">Editar</a></td>` : ''}</tr>`).join('')}
     </table></div>
     ${pode ? `<h2>Nova data</h2>
@@ -317,7 +367,8 @@ function formPessoa(p, papeisPermitidos) {
     <label>Data de nascimento <input type="date" name="nascimento" value="${esc(p.nascimento)}"></label>
     <label>Telefone <input name="telefone" value="${esc(p.telefone)}"></label>
     <label data-so="lider_turma">Turma <select name="turma">${opcoes(TURMAS.map((t) => [t, t]), p.turma, '—')}</select></label>
-    <label data-so="lider_geral lider_turma membro_setor">Setor <input name="setor" value="${esc(p.setor)}" placeholder="Ex.: Recepção, Louvor"></label>`;
+    <label data-so="lider_geral lider_turma membro_setor">Setor <select name="setor">${opcoes(
+      [...new Set([...db.setores.map((x) => x.nome), p.setor].filter(Boolean))].map((x) => [x, x]), p.setor, '—')}</select></label>`;
 }
 
 // Atualiza "Subordinado a" e os campos extras conforme a função escolhida.
@@ -365,9 +416,25 @@ function equipe() {
       <br>Setores: Pastores → Líderes gerais → Líderes de turma → Membros dos setores</p>
     <h2>Organograma</h2>
     ${raizes.length ? `<ul class="arvore">${raizes.map(no).join('')}</ul>` : '<p class="vazio">Ninguém cadastrado.</p>'}
+    <h2>Setores</h2>
+    <div class="cards">${db.setores.map((st) => { const gente = visiveis.filter((p) => p.setor === st.nome);
+      return `<div class="card"><div class="num" style="font-size:1.05rem">${esc(st.nome)}</div><div class="rot">
+        ${['lider_geral', 'lider_turma', 'membro_setor'].map((k) => { const ps = gente.filter((p) => p.papel === k);
+          return ps.length ? `${PAPEIS[k]}: ${ps.map((p) => esc(p.nome)).join(', ')}` : ''; }).filter(Boolean).join('<br>') || 'ninguém cadastrado'}</div></div>`; }).join('')}</div>
+    ${editaCronograma() ? `<form class="grade" id="novoSetor" style="margin-top:.75rem"><label>Novo setor <input name="nome" required></label>
+      <div style="align-self:end"><button class="btn sec">Adicionar setor</button></div></form>` : ''}
     ${orfaos.length ? `<p class="info" style="margin-top:1rem">Sem superior definido: ${orfaos.map((p) => esc(p.nome)).join(', ')}. Cadastre o superior e depois edite a pessoa.</p>` : ''}
     ${pode.length ? `<h2>Cadastrar pessoa</h2>
     <form class="grade" id="nova">${formPessoa({}, pode)}<div style="align-self:end"><button class="btn">Cadastrar</button></div></form>` : ''}`;
+  const fs = document.getElementById('novoSetor');
+  if (fs) fs.onsubmit = (ev) => {
+    ev.preventDefault();
+    const nome = ev.target.nome.value.trim();
+    if (db.setores.some((x) => x.nome.toLowerCase() === nome.toLowerCase())) return aviso('Setor já existe');
+    db.setores.push({ id: `st${Date.now()}`, nome });
+    salvar('Setor adicionado');
+    equipe();
+  };
   const f = document.getElementById('nova');
   if (!f) return;
   ligarPessoa(f, {});
@@ -421,8 +488,8 @@ function formRebanho(r) {
   const coords = visiveis.filter((p) => p.papel === 'coord_rebanho');
   const profs = visiveis.filter((p) => p.papel === 'professor');
   return `
-    <label>Nome do rebanho <input name="nome" required value="${esc(r.nome)}" placeholder="Ex.: Rebanho Verde"></label>
-    <label>Turma <select name="turma" required>${opcoes(TURMAS.map((t) => [t, t]), r.turma)}</select></label>
+    <label>Cor do rebanho <select name="cor" required>${opcoes(Object.entries(CORES).map(([k, [t]]) => [k, t]), r.cor)}</select></label>
+    <label>Turma <select name="turma">${opcoes(TURMAS.map((t) => [t, t]), r.turma, 'A definir')}</select></label>
     <label>Seção <select name="secaoId">${opcoes(db.secoes.map((s) => [s.id, `${s.nome} (${s.horario})`]), r.secaoId, 'A definir')}</select></label>
     <label>Coordenador de rebanho <select name="coordenadorId">${opcoes(coords.map((p) => [p.id, p.nome]), r.coordenadorId, '—')}</select></label>
     <div class="checks"><span class="vazio">Professores:</span>${profs.length ? profs.map((p) => `<label class="check">
@@ -433,7 +500,7 @@ function formRebanho(r) {
 function lerRebanho(form) {
   const d = dadosDoForm(form);
   return {
-    nome: d.nome, turma: d.turma, secaoId: d.secaoId || null, coordenadorId: d.coordenadorId || null,
+    nome: `Rebanho ${CORES[d.cor][0]}`, cor: d.cor, turma: d.turma, secaoId: d.secaoId || null, coordenadorId: d.coordenadorId || null,
     professores: [...form.querySelectorAll('input[name=professores]:checked')].map((c) => c.value),
   };
 }
@@ -443,9 +510,10 @@ function rebanhos() {
   app.innerHTML = `
     <h1>Rebanhos e professores</h1>
     <div class="rolar"><table class="tabela">
-      <tr><th>Rebanho</th><th>Seção</th><th>Coordenador</th><th>Professores</th><th>Crianças ativas</th><th></th></tr>
-      ${lista.map((r) => `<tr><td><a href="#/painel/${r.id}">${esc(nomeRebanho(r))}</a></td>
-        <td>${secao(r.secaoId) ? `${esc(secao(r.secaoId).nome)}<br><span class="vazio">${esc(secao(r.secaoId).horario)}</span>` : '—'}</td>
+      <tr><th>Rebanho</th><th>Turma</th><th>Coordenador</th><th>Professores</th><th>Crianças ativas</th><th></th></tr>
+      ${lista.map((r, i) => `${r.secaoId !== lista[i - 1]?.secaoId ? `<tr class="grupo"><td colspan="6">${esc(secao(r.secaoId)?.nome ?? 'Seção a definir')}
+          <span class="vazio">${esc(secao(r.secaoId)?.horario ?? '')}</span></td></tr>` : ''}
+        <tr><td>${bolinha(r)}<a href="#/painel/${r.id}">${esc(r.nome)}</a></td><td>${esc(r.turma || '—')}</td>
         <td>${esc(nomePessoa(r.coordenadorId))}</td><td>${esc(r.professores.map(nomePessoa).join(', ') || '—')}</td>
         <td>${db.criancas.filter((c) => c.rebanhoId === r.id && c.ativa).length}</td>
         <td><a class="btn sec" href="#/rebanho/${r.id}">Editar</a></td></tr>`).join('') || '<tr><td colspan="6" class="vazio">Nenhum rebanho.</td></tr>'}
@@ -538,7 +606,8 @@ function encontro(id, rid) {
     <h1>${fmt(e.data)} — ${esc(nomeRebanho(r))}</h1>
     <div class="info"><strong>Cronograma:</strong> ${esc(e.tema || 'sem tema')}
       · Versículo: ${esc(e.versiculo || '—')} ${vmax != null ? `(${vmax} pontos)` : '(pontos não definidos)'}
-      · Meditação: ${esc(e.meditacao || '—')}${s ? ` · ${esc(s.nome)} ${esc(s.horario)}` : ''}</div>`;
+      · Meditação: ${esc(e.meditacao || '—')}${s ? ` · ${esc(s.nome)} ${esc(s.horario)}` : ''}
+      ${programaSetores(e) ? `<div style="margin-top:.4rem">${programaSetores(e)}</div>` : ''}</div>`;
   if (e.tipo === 'sem_aula') {
     app.innerHTML = `${cab}<p class="vazio">Data marcada no cronograma como sem programação.</p>`;
     return ligarSeletor();
@@ -553,7 +622,7 @@ function encontro(id, rid) {
     <div class="acoes"><button type="button" class="btn sec" id="todos">Marcar todos presentes</button></div>
     <div class="lanc">
       ${criancas.length ? criancas.map((c) => `<div class="aluno">
-        <div class="nome">${esc(c.nome)}</div>
+        <div class="nome">${esc(c.nome)}${c.alergias ? `<br><span class="tag nao">Alergia: ${esc(c.alergias)}</span>` : ''}</div>
         <div class="campo"><span>Kids</span>${seg(c.id, 'k')}</div>
         <div class="campo"><span>Culto</span>${seg(c.id, 'c')}</div>
         <div class="campo"><span>Versículo${vmax != null ? ` (máx. ${vmax})` : ''}</span><input class="pts" type="number" min="0" ${vmax != null ? `max="${vmax}"` : ''} step="0.5" data-c="${c.id}" value="${rascunho[c.id].v ?? ''}"></div>
@@ -629,8 +698,16 @@ function camposCrianca(c) {
     <label>Nome completo <input name="nome" required value="${esc(c.nome)}"></label>
     <label>Rebanho <select name="rebanhoId" required>${opcoes(meusRebanhos().map((r) => [r.id, nomeRebanho(r)]), c.rebanhoId)}</select></label>
     <label>Data de nascimento <input type="date" name="nascimento" value="${esc(c.nascimento)}"></label>
+    <label>Sexo <select name="sexo">${opcoes([['F', 'Feminino'], ['M', 'Masculino']], c.sexo, '—')}</select></label>
+    <label>Data de entrada <input type="date" name="entrada" required value="${esc(c.entrada)}"></label>
     <label>Responsável <input name="responsavel" value="${esc(c.responsavel)}"></label>
-    <label>Data de entrada <input type="date" name="entrada" required value="${esc(c.entrada)}"></label>`;
+    <label>Parentesco <input name="parentesco" value="${esc(c.parentesco)}" placeholder="Ex.: mãe, pai, avó"></label>
+    <label>Telefone do responsável <input type="tel" name="telefone" value="${esc(c.telefone)}"></label>
+    <label>Contato de emergência <input name="emergencia" value="${esc(c.emergencia)}" placeholder="Nome e telefone"></label>
+    <label>Escola <input name="escola" value="${esc(c.escola)}"></label>
+    <label>Alergias e restrições <input name="alergias" value="${esc(c.alergias)}" placeholder="Ex.: amendoim, lactose"></label>
+    <label>Observações <input name="observacoes" value="${esc(c.observacoes)}"></label>
+    <label class="check"><input type="checkbox" name="autorizaImagem" ${c.autorizaImagem ? 'checked' : ''}> Autoriza uso de imagem</label>`;
 }
 
 function crianca(id) {
@@ -641,7 +718,11 @@ function crianca(id) {
   const feitos = encontrosRealizados(db);
   app.innerHTML = `
     <h1>${esc(c.nome)} ${c.ativa ? '' : '<span class="tag fora">inativa</span>'}</h1>
-    <p class="sub">${esc(nomeRebanho(rebanho(c.rebanhoId)))} · ${idade(c.nascimento)} anos · responsável: ${esc(c.responsavel || '—')} · entrada em ${fmt(c.entrada)}${c.ativa ? '' : ` · saída em ${fmt(c.saida)}: ${esc(c.motivoSaida)}`}</p>
+    <p class="sub">${bolinha(rebanho(c.rebanhoId))}${esc(nomeRebanho(rebanho(c.rebanhoId)))} · ${idade(c.nascimento)} anos${c.nascimento ? ` (${fmt(c.nascimento)})` : ''} · entrada em ${fmt(c.entrada)}${c.ativa ? '' : ` · saída em ${fmt(c.saida)}: ${esc(c.motivoSaida)}`}
+      <br>Responsável: ${esc(c.responsavel || '—')}${c.parentesco ? ` (${esc(c.parentesco)})` : ''}${c.telefone ? ` · ${esc(c.telefone)}` : ''}${c.emergencia ? ` · emergência: ${esc(c.emergencia)}` : ''}
+      ${c.escola ? `<br>Escola: ${esc(c.escola)}` : ''} · Imagem: ${c.autorizaImagem ? 'autorizada' : 'não autorizada'}</p>
+    ${c.alergias ? `<p class="info alerta">Alergias e restrições: <strong>${esc(c.alergias)}</strong></p>` : ''}
+    ${motivosAtencao(db, c).length ? `<p class="info alerta">Precisa de atenção: ${esc(motivosAtencao(db, c).join('; '))}</p>` : ''}
     <div class="cards">
       <div class="card"><div class="num">${pct(r.kids.pct)}</div><div class="rot">Kids: ${r.kids.presencas} de ${r.kids.total} (${r.atrasos} atrasos, ${r.faltasJustificadas} FJ)</div></div>
       <div class="card"><div class="num">${pct(r.culto.pct)}</div><div class="rot">Culto: ${r.culto.presencas} de ${r.culto.total}</div></div>
@@ -849,6 +930,11 @@ function rotear() {
 function atualizar(local, b) {
   for (const [k, v] of Object.entries(b)) if (!(k in local)) local[k] = structuredClone(v);
   for (const d of b.desafios) if (!local.desafios.some((x) => x.id === d.id)) local.desafios.push(structuredClone(d));
+  for (const r of b.rebanhos) if (!local.rebanhos.some((x) => x.id === r.id)) local.rebanhos.push(structuredClone(r));
+  for (const r of local.rebanhos) {
+    r.cor ??= ORDEM_COR.find((k) => r.nome?.toLowerCase().includes(k)) ?? 'verde';
+    if (r.id === 'r1' && !r.secaoId) r.secaoId = 's2';
+  }
   for (const c of local.criancas) c.rebanhoId ??= 'r1';
   for (const e of local.encontros) e.tipo ??= 'aula';
   if (local.professor) {

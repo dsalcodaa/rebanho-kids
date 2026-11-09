@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { avaliarDesafio, descendentes, mediaNotas, mediaTurma, rebanhosVisiveis, resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio } from './regras.js';
+import { aniversariantes, avaliarDesafio, descendentes, frequenciaPorMes, motivosAtencao, mediaNotas, mediaTurma, rebanhosVisiveis, resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio } from './regras.js';
 
 const db = JSON.parse(readFileSync(new URL('./data/dados.json', import.meta.url), 'utf-8'));
 const porNome = (n) => db.criancas.find((c) => c.nome.startsWith(n));
@@ -98,4 +98,23 @@ test('data sem programação no cronograma sai da janela do desafio', () => {
   const enc = db.encontros.map((e) => (e.id === 4 ? { ...e, tipo: 'sem_aula' } : e));
   const s = semanasDoDesafio({ ...db, encontros: enc }, { inicio: 3, semanas: 3 }).map((e) => e.id);
   assert.deepEqual(s, [3, 5, 6]);
+});
+
+test('frequência por mês soma as crianças', () => {
+  const ana = [porNome('ANA')];
+  const meses = frequenciaPorMes(db, ana, 'k');
+  assert.equal(meses[0].mes, '2026-02');
+  assert.ok(meses.every((m) => m.pct === 1)); // Ana não faltou
+  const fev = frequenciaPorMes(db, db.criancas.filter((c) => c.entrada < '2026-03-01'), 'k')[0];
+  assert.equal(fev.total, 8); // 22/02, 8 crianças inscritas
+});
+
+test('crianças que precisam de atenção', () => {
+  assert.deepEqual(motivosAtencao(db, porNome('ANA')), []);
+  assert.match(motivosAtencao(db, porNome('LORENZO')).join(), /frequência no Kids de 27%/);
+  assert.match(motivosAtencao(db, porNome('JULIANA')).join(), /3 últimas faltas seguidas/);
+});
+
+test('aniversariantes do mês', () => {
+  assert.deepEqual(aniversariantes(db.criancas, 4).map((c) => c.nome.split(' ')[0]), ['ANA', 'ARÃO', 'EVELYN']);
 });

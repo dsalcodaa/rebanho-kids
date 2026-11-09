@@ -1,5 +1,5 @@
 {
- "versao": 3,
+ "versao": 4,
  "ministerio": "Nova Kids e Infantil",
  "secoes": [
   {
@@ -32,16 +32,170 @@
    "superiorId": null
   }
  ],
+ "setores": [
+  {
+   "id": "st1",
+   "nome": "História Bíblica"
+  },
+  {
+   "id": "st2",
+   "nome": "Revisão e Retenção"
+  },
+  {
+   "id": "st3",
+   "nome": "Momento Alegria"
+  },
+  {
+   "id": "st4",
+   "nome": "Bíblia Intelecto"
+  }
+ ],
  "rebanhos": [
   {
    "id": "r1",
    "nome": "Rebanho Verde",
+   "cor": "verde",
    "turma": "2A",
-   "secaoId": null,
+   "secaoId": "s2",
    "coordenadorId": null,
    "professores": [
     "pe1"
    ]
+  },
+  {
+   "id": "r-s1-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s1-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "",
+   "secaoId": "s1",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s2-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "",
+   "secaoId": "s2",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s3-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "",
+   "secaoId": "s3",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-azul",
+   "nome": "Rebanho Azul",
+   "cor": "azul",
+   "turma": "",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-verde",
+   "nome": "Rebanho Verde",
+   "cor": "verde",
+   "turma": "",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-amarelo",
+   "nome": "Rebanho Amarelo",
+   "cor": "amarelo",
+   "turma": "",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
+  },
+  {
+   "id": "r-s4-vermelho",
+   "nome": "Rebanho Vermelho",
+   "cor": "vermelho",
+   "turma": "",
+   "secaoId": "s4",
+   "coordenadorId": null,
+   "professores": []
   }
  ],
  "criancas": [

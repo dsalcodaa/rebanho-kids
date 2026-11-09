@@ -23,6 +23,9 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Ensino: Pastores → Coordenadores gerais → Coordenadores de rebanho → Professores → Crianças.
 - Setores: Pastores → Líderes gerais → Líderes de turma → Membros dos setores.
 - Turmas 1 a 4 (A, B, C); seções 08:00–10:00, 10:30–12:30, 15:30–17:30, 18:30–20:30.
+- Cada seção tem os rebanhos Azul, Verde, Amarelo e Vermelho (o 2A Verde da planilha está na 2ª seção).
+- Setores: História Bíblica, Revisão e Retenção, Momento Alegria, Bíblia Intelecto (novos setores na aba Equipe).
+- Painel: frequência por mês, aniversariantes, crianças que precisam de atenção (Kids < 75% ou 3 faltas seguidas), ranking de versículos.
 - **Cronograma** (pastores): datas do ano, tema, versículo e pontos, meditação, desafios e premiação.
   Tudo aparece direto nos lançamentos dos professores; data "sem programação" sai dos lançamentos e dos desafios.
 - **Equipe**: organograma e cadastro; cada nível cadastra quem está abaixo dele no mesmo ramo.
