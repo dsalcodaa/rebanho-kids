@@ -34,7 +34,8 @@ export function resumoCrianca(regs) {
 }
 
 export function semanasDoDesafio(db, d) {
-  const ordem = [...db.encontros].sort((a, b) => a.data.localeCompare(b.data));
+  // Datas marcadas no cronograma como "sem programação" não contam como semana do desafio.
+  const ordem = db.encontros.filter((e) => e.tipo !== 'sem_aula').sort((a, b) => a.data.localeCompare(b.data));
   const i = ordem.findIndex((e) => e.id === Number(d.inicio));
   return i < 0 ? [] : ordem.slice(i, i + Number(d.semanas));
 }
@@ -93,4 +94,39 @@ export function mediaNotas(notas = {}) {
 export function mediaTurma(db, criancas) {
   return mediaNotas(Object.fromEntries(criancas.flatMap((c) =>
     Object.entries(db.notas?.[c.id] || {}).map(([p, n]) => [`${c.id}-${p}`, n]))));
+}
+
+// ---------- Organograma ----------
+// Superior obrigatório de cada papel (ramo do ensino e ramo dos setores).
+export const SUPERIOR = {
+  pastor: null,
+  coord_geral: 'pastor',
+  coord_rebanho: 'coord_geral',
+  professor: 'coord_rebanho',
+  lider_geral: 'pastor',
+  lider_turma: 'lider_geral',
+  membro_setor: 'lider_turma',
+};
+
+export function descendentes(db, id) {
+  const out = new Set();
+  const fila = [id];
+  while (fila.length) {
+    const x = fila.pop();
+    for (const p of db.pessoas) if (p.superiorId === x && !out.has(p.id)) { out.add(p.id); fila.push(p.id); }
+  }
+  return out;
+}
+
+// Rebanhos que a pessoa enxerga. Sem pessoa (administrador) ou pastor: todos.
+export function rebanhosVisiveis(db, pessoa) {
+  if (!pessoa || pessoa.papel === 'pastor') return db.rebanhos;
+  const sub = descendentes(db, pessoa.id);
+  const daEquipe = (r) => sub.has(r.coordenadorId) || r.professores.some((x) => sub.has(x));
+  switch (pessoa.papel) {
+    case 'coord_geral': return db.rebanhos.filter(daEquipe);
+    case 'coord_rebanho': return db.rebanhos.filter((r) => r.coordenadorId === pessoa.id || daEquipe(r));
+    case 'professor': return db.rebanhos.filter((r) => r.professores.includes(pessoa.id));
+    default: return [];
+  }
 }

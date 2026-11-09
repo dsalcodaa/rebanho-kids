@@ -78,6 +78,7 @@ def main(caminho):
             "responsavel": resumo.cell(lin, 4).value,
             "entrada": next(x["data"] for x in encontros if x["id"] == entrada),
             "ativa": True,
+            "rebanhoId": "r1",
         })
         registros[cid] = limpo
         if not nasc:
@@ -96,11 +97,24 @@ def main(caminho):
                     alertas.append(f"{nome}: {v} pontos de versículo em {e['data']} (máximo {vmax[str(e['id'])]})")
 
     dados = {
-        "versao": 2,
-        "professor": {"nome": "Pedro Henrique Andrade e Paiva", "nascimento": "2001-03-20"},
-        "turma": "Kids 2A — Rebanho Verde",
-        "criancas": criancas,
-        "encontros": [{"id": e["id"], "data": e["data"]} for e in encontros],
+        "versao": 3,
+        "ministerio": "Nova Kids e Infantil",
+        "secoes": [
+            {"id": "s1", "nome": "1ª seção", "horario": "08:00 às 10:00"},
+            {"id": "s2", "nome": "2ª seção", "horario": "10:30 às 12:30"},
+            {"id": "s3", "nome": "3ª seção", "horario": "15:30 às 17:30"},
+            {"id": "s4", "nome": "4ª seção", "horario": "18:30 às 20:30"},
+        ],
+        "pessoas": [
+            {"id": "pe1", "nome": "Pedro Henrique Andrade e Paiva", "nascimento": "2001-03-20",
+             "papel": "professor", "superiorId": None},
+        ],
+        "rebanhos": [
+            {"id": "r1", "nome": "Rebanho Verde", "turma": "2A", "secaoId": None,
+             "coordenadorId": None, "professores": ["pe1"]},
+        ],
+                "criancas": criancas,
+        "encontros": [{"id": e["id"], "data": e["data"], "tipo": "aula"} for e in encontros],
         "versiculoMax": vmax,
         "registros": registros,
         "desafios": [

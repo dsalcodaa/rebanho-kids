@@ -1,10 +1,49 @@
 {
- "versao": 2,
- "professor": {
-  "nome": "Pedro Henrique Andrade e Paiva",
-  "nascimento": "2001-03-20"
- },
- "turma": "Kids 2A — Rebanho Verde",
+ "versao": 3,
+ "ministerio": "Nova Kids e Infantil",
+ "secoes": [
+  {
+   "id": "s1",
+   "nome": "1ª seção",
+   "horario": "08:00 às 10:00"
+  },
+  {
+   "id": "s2",
+   "nome": "2ª seção",
+   "horario": "10:30 às 12:30"
+  },
+  {
+   "id": "s3",
+   "nome": "3ª seção",
+   "horario": "15:30 às 17:30"
+  },
+  {
+   "id": "s4",
+   "nome": "4ª seção",
+   "horario": "18:30 às 20:30"
+  }
+ ],
+ "pessoas": [
+  {
+   "id": "pe1",
+   "nome": "Pedro Henrique Andrade e Paiva",
+   "nascimento": "2001-03-20",
+   "papel": "professor",
+   "superiorId": null
+  }
+ ],
+ "rebanhos": [
+  {
+   "id": "r1",
+   "nome": "Rebanho Verde",
+   "turma": "2A",
+   "secaoId": null,
+   "coordenadorId": null,
+   "professores": [
+    "pe1"
+   ]
+  }
+ ],
  "criancas": [
   {
    "id": "c1",
@@ -12,7 +51,8 @@
    "nascimento": "2018-04-07",
    "responsavel": "CIBELLY",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c2",
@@ -20,7 +60,8 @@
    "nascimento": "2018-04-12",
    "responsavel": "MARCELA",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c3",
@@ -28,7 +69,8 @@
    "nascimento": "2018-06-06",
    "responsavel": "MARIA",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c4",
@@ -36,7 +78,8 @@
    "nascimento": "2018-04-12",
    "responsavel": "DIANA",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c5",
@@ -44,7 +87,8 @@
    "nascimento": "2018-08-05",
    "responsavel": "JOAO/SHIRLEY",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c6",
@@ -52,7 +96,8 @@
    "nascimento": "2018-09-18",
    "responsavel": "EWERTON/CLAUDIA",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c7",
@@ -60,7 +105,8 @@
    "nascimento": "2018-08-03",
    "responsavel": "IDELBRANDO/JUDITH",
    "entrada": "2026-07-05",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c8",
@@ -68,7 +114,8 @@
    "nascimento": null,
    "responsavel": "LEANDRO/CLEUMAR",
    "entrada": "2026-07-05",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c9",
@@ -76,7 +123,8 @@
    "nascimento": "2018-08-07",
    "responsavel": "BRUNO/JULIANA",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   },
   {
    "id": "c10",
@@ -84,153 +132,190 @@
    "nascimento": "2018-06-16",
    "responsavel": "CRISTIAN/MONICA",
    "entrada": "2026-02-22",
-   "ativa": true
+   "ativa": true,
+   "rebanhoId": "r1"
   }
  ],
  "encontros": [
   {
    "id": 1,
-   "data": "2026-02-22"
+   "data": "2026-02-22",
+   "tipo": "aula"
   },
   {
    "id": 2,
-   "data": "2026-03-01"
+   "data": "2026-03-01",
+   "tipo": "aula"
   },
   {
    "id": 3,
-   "data": "2026-03-08"
+   "data": "2026-03-08",
+   "tipo": "aula"
   },
   {
    "id": 4,
-   "data": "2026-03-15"
+   "data": "2026-03-15",
+   "tipo": "aula"
   },
   {
    "id": 5,
-   "data": "2026-03-22"
+   "data": "2026-03-22",
+   "tipo": "aula"
   },
   {
    "id": 6,
-   "data": "2026-03-29"
+   "data": "2026-03-29",
+   "tipo": "aula"
   },
   {
    "id": 7,
-   "data": "2026-04-12"
+   "data": "2026-04-12",
+   "tipo": "aula"
   },
   {
    "id": 8,
-   "data": "2026-04-19"
+   "data": "2026-04-19",
+   "tipo": "aula"
   },
   {
    "id": 9,
-   "data": "2026-04-26"
+   "data": "2026-04-26",
+   "tipo": "aula"
   },
   {
    "id": 10,
-   "data": "2026-05-03"
+   "data": "2026-05-03",
+   "tipo": "aula"
   },
   {
    "id": 11,
-   "data": "2026-05-10"
+   "data": "2026-05-10",
+   "tipo": "aula"
   },
   {
    "id": 12,
-   "data": "2026-05-17"
+   "data": "2026-05-17",
+   "tipo": "aula"
   },
   {
    "id": 13,
-   "data": "2026-05-24"
+   "data": "2026-05-24",
+   "tipo": "aula"
   },
   {
    "id": 14,
-   "data": "2026-05-31"
+   "data": "2026-05-31",
+   "tipo": "aula"
   },
   {
    "id": 15,
-   "data": "2026-06-07"
+   "data": "2026-06-07",
+   "tipo": "aula"
   },
   {
    "id": 16,
-   "data": "2026-06-14"
+   "data": "2026-06-14",
+   "tipo": "aula"
   },
   {
    "id": 17,
-   "data": "2026-06-21"
+   "data": "2026-06-21",
+   "tipo": "aula"
   },
   {
    "id": 18,
-   "data": "2026-06-28"
+   "data": "2026-06-28",
+   "tipo": "aula"
   },
   {
    "id": 19,
-   "data": "2026-07-05"
+   "data": "2026-07-05",
+   "tipo": "aula"
   },
   {
    "id": 20,
-   "data": "2026-07-12"
+   "data": "2026-07-12",
+   "tipo": "aula"
   },
   {
    "id": 21,
-   "data": "2026-07-19"
+   "data": "2026-07-19",
+   "tipo": "aula"
   },
   {
    "id": 22,
-   "data": "2026-07-26"
+   "data": "2026-07-26",
+   "tipo": "aula"
   },
   {
    "id": 23,
-   "data": "2026-08-02"
+   "data": "2026-08-02",
+   "tipo": "aula"
   },
   {
    "id": 24,
-   "data": "2026-08-09"
+   "data": "2026-08-09",
+   "tipo": "aula"
   },
   {
    "id": 25,
-   "data": "2026-08-30"
+   "data": "2026-08-30",
+   "tipo": "aula"
   },
   {
    "id": 26,
-   "data": "2026-09-06"
+   "data": "2026-09-06",
+   "tipo": "aula"
   },
   {
    "id": 27,
-   "data": "2026-09-13"
+   "data": "2026-09-13",
+   "tipo": "aula"
   },
   {
    "id": 28,
-   "data": "2026-09-20"
+   "data": "2026-09-20",
+   "tipo": "aula"
   },
   {
    "id": 29,
-   "data": "2026-09-27"
+   "data": "2026-09-27",
+   "tipo": "aula"
   },
   {
    "id": 30,
-   "data": "2026-10-04"
+   "data": "2026-10-04",
+   "tipo": "aula"
   },
   {
    "id": 31,
-   "data": "2026-10-11"
+   "data": "2026-10-11",
+   "tipo": "aula"
   },
   {
    "id": 32,
-   "data": "2026-10-18"
+   "data": "2026-10-18",
+   "tipo": "aula"
   },
   {
    "id": 33,
-   "data": "2026-10-25"
+   "data": "2026-10-25",
+   "tipo": "aula"
   },
   {
    "id": 34,
-   "data": "2026-11-01"
+   "data": "2026-11-01",
+   "tipo": "aula"
   },
   {
    "id": 35,
-   "data": "2026-11-08"
+   "data": "2026-11-08",
+   "tipo": "aula"
   },
   {
    "id": 36,
-   "data": "2026-11-15"
+   "data": "2026-11-15",
+   "tipo": "aula"
   }
  ],
  "versiculoMax": {

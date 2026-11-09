@@ -19,6 +19,17 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Premiação de fim de ano: 3 TOPs (configurável). TOP 3: 06/09 a 18/10 (7 semanas, 2 FJ, 21 pontos).
 - Provas: 3 por ano, nota de 0 a 10, lançadas na página da criança. Média = média simples das provas lançadas.
 
+## Organograma e abas
+- Ensino: Pastores → Coordenadores gerais → Coordenadores de rebanho → Professores → Crianças.
+- Setores: Pastores → Líderes gerais → Líderes de turma → Membros dos setores.
+- Turmas 1 a 4 (A, B, C); seções 08:00–10:00, 10:30–12:30, 15:30–17:30, 18:30–20:30.
+- **Cronograma** (pastores): datas do ano, tema, versículo e pontos, meditação, desafios e premiação.
+  Tudo aparece direto nos lançamentos dos professores; data "sem programação" sai dos lançamentos e dos desafios.
+- **Equipe**: organograma e cadastro; cada nível cadastra quem está abaixo dele no mesmo ramo.
+- **Rebanhos**: turma, seção, coordenador e professores.
+- **Lançamentos**: presença, culto, versículo e meditação por rebanho.
+- "Entrar como" simula cada perfil (abas e dados visíveis mudam). Não é login: a segurança real vem com o Supabase.
+
 ## Comandos
 ```
 python -I tools/importar_planilha.py "../CONTROLE KIDS 2A - REBANHO VERDE.xlsx"   # regenera data/dados.json

@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { avaliarDesafio, mediaNotas, mediaTurma, resumoCrianca, topsDaCrianca, versiculosDoDesafio } from './regras.js';
+import { avaliarDesafio, descendentes, mediaNotas, mediaTurma, rebanhosVisiveis, resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio } from './regras.js';
 
 const db = JSON.parse(readFileSync(new URL('./data/dados.json', import.meta.url), 'utf-8'));
 const porNome = (n) => db.criancas.find((c) => c.nome.startsWith(n));
@@ -67,4 +67,35 @@ test('criança que entrou depois fica fora', () => {
 test('3 TOPs = premiação', () => {
   const premiados = db.criancas.filter((c) => topsDaCrianca(db, c).length >= db.topsPremiacao);
   assert.equal(premiados.length, 5);
+});
+
+test('organograma: cada um vê só os rebanhos da sua equipe', () => {
+  const org = {
+    pessoas: [
+      { id: 'pa', papel: 'pastor' },
+      { id: 'cg', papel: 'coord_geral', superiorId: 'pa' },
+      { id: 'cr', papel: 'coord_rebanho', superiorId: 'cg' },
+      { id: 'pr', papel: 'professor', superiorId: 'cr' },
+      { id: 'pr2', papel: 'professor', superiorId: 'cr' },
+      { id: 'lg', papel: 'lider_geral', superiorId: 'pa' },
+    ],
+    rebanhos: [
+      { id: 'r1', coordenadorId: 'cr', professores: ['pr'] },
+      { id: 'r2', coordenadorId: null, professores: ['pr2'] },
+      { id: 'r3', coordenadorId: null, professores: [] },
+    ],
+  };
+  const ver = (id) => rebanhosVisiveis(org, org.pessoas.find((p) => p.id === id)).map((r) => r.id);
+  assert.deepEqual([...descendentes(org, 'cg')].sort(), ['cr', 'pr', 'pr2']);
+  assert.deepEqual(ver('pa'), ['r1', 'r2', 'r3']);
+  assert.deepEqual(ver('cg'), ['r1', 'r2']);
+  assert.deepEqual(ver('cr'), ['r1', 'r2']);
+  assert.deepEqual(ver('pr'), ['r1']);
+  assert.deepEqual(ver('lg'), []);
+});
+
+test('data sem programação no cronograma sai da janela do desafio', () => {
+  const enc = db.encontros.map((e) => (e.id === 4 ? { ...e, tipo: 'sem_aula' } : e));
+  const s = semanasDoDesafio({ ...db, encontros: enc }, { inicio: 3, semanas: 3 }).map((e) => e.id);
+  assert.deepEqual(s, [3, 5, 6]);
 });

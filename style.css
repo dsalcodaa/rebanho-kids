@@ -13,6 +13,7 @@
   background: var(--fundo);
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { margin: 0; }
 a { color: var(--verde); }
 
@@ -86,3 +87,14 @@ label.check { display: flex; align-items: center; gap: .5rem; }
   .aluno .nome { grid-column: 1 / -1; }
   .tabela th, .tabela td { padding: .5rem; font-size: .85rem; }
 }
+
+/* Perfil e organograma */
+.perfil { display: flex; align-items: center; gap: .4rem; font-size: .8rem; }
+.perfil select { max-width: 260px; padding: .35rem .5rem; }
+.info { background: var(--verde-claro); border-radius: var(--raio); padding: .8rem 1rem; margin-bottom: 1rem; color: var(--texto); }
+.arvore, .arvore ul { list-style: none; margin: 0; padding-left: 1.25rem; border-left: 2px solid var(--borda); }
+.arvore { background: #fff; border: 1px solid var(--borda); border-radius: var(--raio); padding: 1rem 1rem 1rem 1.5rem; }
+.arvore li { margin: .35rem 0; }
+.arvore .papel { color: var(--suave); font-size: .8rem; margin-left: .35rem; }
+.checks { display: flex; flex-wrap: wrap; gap: .5rem 1rem; grid-column: 1 / -1; }
+@media (max-width: 760px) { .perfil select { max-width: none; flex: 1; } }
