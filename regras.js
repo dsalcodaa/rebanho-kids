@@ -163,3 +163,60 @@ export function aniversariantes(pessoas, mes) {
   return pessoas.filter((p) => p.nascimento && Number(p.nascimento.slice(5, 7)) === mes)
     .sort((a, b) => a.nascimento.slice(8).localeCompare(b.nascimento.slice(8)));
 }
+
+// ---------- Bíblia & Intelecto ----------
+// Cada exercício do gabarito tem 8 questões, gravadas como 8 letras:
+// c = acerto de primeira, r = errou e corrigiu, e = errou (ainda sem correção), - = em branco.
+export const QUESTOES_BI = 8;
+
+export function resumoGabaritos(gabaritos) {
+  const porQuestao = Array(QUESTOES_BI).fill(0);
+  const exercicios = [];
+  let respondidas = 0, acertos = 0, corrigidos = 0, pendentes = 0;
+  for (const g of gabaritos) {
+    for (const [ex, linha] of Object.entries(g.linhas || {})) {
+      const erros = [...linha].filter((x) => x === 'r' || x === 'e').length;
+      if ([...linha].every((x) => x === '-')) continue;
+      exercicios.push({ livro: g.livro, ex: Number(ex), erros, completo: !/[-e]/.test(linha) });
+      [...linha].forEach((x, i) => {
+        if (x === '-') return;
+        respondidas++;
+        if (x === 'c') acertos++;
+        else { porQuestao[i]++; if (x === 'r') corrigidos++; else pendentes++; }
+      });
+    }
+  }
+  const erros = corrigidos + pendentes;
+  return {
+    exercicios: exercicios.length,
+    completos: exercicios.filter((x) => x.completo).length,
+    respondidas, acertos, erros, corrigidos, pendentes,
+    taxa: respondidas ? acertos / respondidas : null,
+    nota: respondidas ? Math.round((acertos / respondidas) * 100) / 10 : null,
+    errosPorExercicio: exercicios.length ? erros / exercicios.length : null,
+    porQuestao,
+    semErro: exercicios.filter((x) => !x.erros).length,
+    piores: [...exercicios].filter((x) => x.erros).sort((a, b) => b.erros - a.erros || a.ex - b.ex).slice(0, 5),
+  };
+}
+
+// Parecer automático a partir dos números (o setor pode complementar com observações).
+export function parecerBI(r) {
+  if (!r.respondidas) return 'Sem gabarito lançado.';
+  const pct = Math.round(r.taxa * 100);
+  const nivel = pct >= 90 ? 'Excelente desempenho' : pct >= 80 ? 'Bom desempenho' : pct >= 70 ? 'Desempenho regular' : 'Precisa de acompanhamento';
+  const max = Math.max(...r.porQuestao);
+  const dificeis = r.porQuestao.map((n, i) => [n, i + 1]).filter(([n]) => n && n === max).map(([, q]) => q);
+  const partes = [
+    `${nivel}: acertou de primeira ${pct}% das questões (${r.acertos} de ${r.respondidas}) em ${r.exercicios} exercícios.`,
+    `Média de ${r.errosPorExercicio.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} erro(s) por exercício; ${r.semErro} exercício(s) sem nenhum erro.`,
+  ];
+  if (dificeis.length) {
+    const vezes = `${max} ${max === 1 ? 'vez' : 'vezes'}${dificeis.length > 1 ? ' cada' : ''}`;
+    partes.push(dificeis.length > 1 ? `Mais erra as questões ${dificeis.join(' e ')} (${vezes}).` : `Mais erra a questão ${dificeis[0]} (${vezes}).`);
+  }
+  if (r.erros) partes.push(r.pendentes ? `${r.corrigidos} erro(s) corrigido(s) e ${r.pendentes} aguardando correção.` : `Corrigiu todos os ${r.erros} erros.`);
+  if (pct < 70) partes.push('Sugestão: acompanhar a leitura dos enunciados junto com a criança.');
+  else if (pct < 80) partes.push('Sugestão: reforçar a atenção nas questões em que mais erra.');
+  return partes.join(' ');
+}

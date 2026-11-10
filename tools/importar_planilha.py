@@ -12,6 +12,39 @@ import openpyxl
 ANO = 2026  # datas da planilha caem no domingo em 2026
 VAZIO = {None, "-", "--"}
 
+# Coleção Bíblia & Intelecto: 13 livros, na ordem da carta ao educador
+LIVROS_BI = [
+    ("criacao", "Nível Frase", "A Criação"), ("vida_cristo", "Nível Principiante", "Vida de Cristo"),
+    ("genesis", "Nível Principiante", "Gênesis"), ("alimentos", "Nível Principiante", "Alimentos"),
+    ("juizes", "Nível 1", "Juízes"), ("vida_davi", "Nível 1", "Vida de Davi"),
+    ("herois_viloes", "Nível 2", "Heróis e Vilões"), ("reis", "Nível 2", "Reis"), ("apocalipse", "Nível 2", "Apocalipse"),
+    ("profetas", "Nível 3", "Profetas"), ("parabolas", "Nível 3", "Parábolas"), ("origens", "Nível 3", "Origens"),
+    ("servos", "Nível Teens", "Servos"),
+]
+
+
+def gabaritos_das_fotos():
+    """Gabaritos transcritos das fotos -> uma linha de 8 letras por exercício.
+
+    c = acerto de primeira, r = errou e corrigiu, e = errou (sem correção), - = em branco.
+    """
+    arq = Path(__file__).resolve().parent / "gabaritos_fotos.json"
+    if not arq.exists():
+        return [], []
+    fonte = json.loads(arq.read_text(encoding="utf-8"))
+    saida = []
+    for i, g in enumerate(fonte["gabaritos"], 1):
+        linhas = {}
+        for ex, m in g["linhas"].items():
+            q = ["c"] * 8
+            for k, letra in (("r", "r"), ("e", "e"), ("v", "-")):
+                for n in m.get(k, []):
+                    q[n - 1] = letra
+            linhas[ex] = "".join(q)
+        saida.append({"id": f"g{i}", "criancaId": g["crianca"], "livro": g["livro"], "inicio": g["inicio"],
+                      "linhas": linhas, "origem": f"Foto {g['foto']}", "confirmar": g.get("confirmar")})
+    return saida, fonte.get("naoIdentificadas", [])
+
 
 def main(caminho):
     wb = openpyxl.load_workbook(caminho, data_only=True)
@@ -97,8 +130,9 @@ def main(caminho):
                     nome = next(c["nome"] for c in criancas if c["id"] == cid)
                     alertas.append(f"{nome}: {v} versículos decorados em {e['data']} (máximo {vmax[str(e['id'])]})")
 
+    gabaritos, sem_nome = gabaritos_das_fotos()
     dados = {
-        "versao": 7,
+        "versao": 8,
         "ministerio": "Nova Kids e Infantil",
         "secoes": [
             {"id": "s1", "nome": "1ª seção", "horario": "08:00 às 10:00"},
@@ -148,6 +182,9 @@ def main(caminho):
         "notaMaxima": 10,
         "notas": {},
         "programacoes": {},
+        "livrosBI": [{"id": i, "nivel": n, "nome": t} for i, n, t in LIVROS_BI],
+        "gabaritos": gabaritos,
+        "gabaritosSemNome": sem_nome,
         "alertas": alertas,
     }
     destino = Path(__file__).resolve().parent.parent / "data" / "dados.json"

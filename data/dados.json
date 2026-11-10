@@ -1,5 +1,5 @@
 {
- "versao": 7,
+ "versao": 8,
  "ministerio": "Nova Kids e Infantil",
  "secoes": [
   {
@@ -3648,6 +3648,313 @@
  "notaMaxima": 10,
  "notas": {},
  "programacoes": {},
+ "livrosBI": [
+  {
+   "id": "criacao",
+   "nivel": "Nível Frase",
+   "nome": "A Criação"
+  },
+  {
+   "id": "vida_cristo",
+   "nivel": "Nível Principiante",
+   "nome": "Vida de Cristo"
+  },
+  {
+   "id": "genesis",
+   "nivel": "Nível Principiante",
+   "nome": "Gênesis"
+  },
+  {
+   "id": "alimentos",
+   "nivel": "Nível Principiante",
+   "nome": "Alimentos"
+  },
+  {
+   "id": "juizes",
+   "nivel": "Nível 1",
+   "nome": "Juízes"
+  },
+  {
+   "id": "vida_davi",
+   "nivel": "Nível 1",
+   "nome": "Vida de Davi"
+  },
+  {
+   "id": "herois_viloes",
+   "nivel": "Nível 2",
+   "nome": "Heróis e Vilões"
+  },
+  {
+   "id": "reis",
+   "nivel": "Nível 2",
+   "nome": "Reis"
+  },
+  {
+   "id": "apocalipse",
+   "nivel": "Nível 2",
+   "nome": "Apocalipse"
+  },
+  {
+   "id": "profetas",
+   "nivel": "Nível 3",
+   "nome": "Profetas"
+  },
+  {
+   "id": "parabolas",
+   "nivel": "Nível 3",
+   "nome": "Parábolas"
+  },
+  {
+   "id": "origens",
+   "nivel": "Nível 3",
+   "nome": "Origens"
+  },
+  {
+   "id": "servos",
+   "nivel": "Nível Teens",
+   "nome": "Servos"
+  }
+ ],
+ "gabaritos": [
+  {
+   "id": "g1",
+   "criancaId": "c2",
+   "livro": "vida_cristo",
+   "inicio": "2026-04-19",
+   "linhas": {
+    "1": "crrrcrcc",
+    "2": "ccrcrrcc",
+    "3": "ccrrrccc",
+    "4": "crrccccc",
+    "5": "rcrccccc",
+    "6": "crrrccrc",
+    "7": "crrcccrc",
+    "8": "cccccrcc",
+    "9": "crcccccc",
+    "10": "crcccccc",
+    "11": "cccccccc",
+    "12": "rrrccccc",
+    "13": "crcccccc",
+    "14": "crrrccrc",
+    "15": "crrrrccc",
+    "16": "rccccccc",
+    "17": "rcrccccc",
+    "18": "rcrccrrc",
+    "19": "crcccccc",
+    "20": "rrcccrcc",
+    "21": "cccccccc",
+    "22": "rccccccc",
+    "23": "ccrccccc",
+    "24": "recccccc",
+    "25": "ccrcccrc",
+    "26": "crcccccc",
+    "27": "ccccceec",
+    "28": "cccccrcc"
+   },
+   "origem": "Foto 19.50.41 (1) e 19.50.42",
+   "confirmar": null
+  },
+  {
+   "id": "g2",
+   "criancaId": "c4",
+   "livro": "vida_cristo",
+   "inicio": "2026-04-26",
+   "linhas": {
+    "1": "cccccccc",
+    "2": "rcrccccc",
+    "3": "rcrccrcc",
+    "4": "rcrccccc",
+    "5": "ccrccrcc",
+    "6": "ccccrccr",
+    "7": "crrccccc",
+    "8": "cccccccc",
+    "9": "crcccccc",
+    "10": "rcccccrc",
+    "11": "crrccccc",
+    "12": "rccccccc",
+    "13": "crcrcrcc",
+    "14": "crcccrcc",
+    "15": "crrccrrc",
+    "16": "crrcrccc",
+    "17": "crcccccc",
+    "18": "rcccrcrc",
+    "19": "cccccrcc",
+    "20": "crcccccc",
+    "21": "cccccccr",
+    "22": "ccrccrcc",
+    "23": "eccccccc",
+    "24": "ceecrccc",
+    "25": "cccrcccc",
+    "26": "creccccc",
+    "27": "cceccccc",
+    "28": "cccccccc",
+    "29": "ececcccc"
+   },
+   "origem": "Foto 19.50.42 (1) e 19.50.42 (2)",
+   "confirmar": "Exercícios 25 a 29 vêm de um verso sem nome (foto 19.50.42 (2)), atribuído pela ordem das fotos."
+  },
+  {
+   "id": "g3",
+   "criancaId": "c1",
+   "livro": "alimentos",
+   "inicio": "2026-06-14",
+   "linhas": {
+    "1": "cccccccc",
+    "2": "cccccccc",
+    "3": "cccccccc",
+    "4": "ccrccccc",
+    "5": "cccccccr",
+    "6": "rcrrrccc",
+    "7": "cccccccc",
+    "8": "ccrccccr",
+    "9": "ccrccccc",
+    "10": "ccrccccc",
+    "11": "ccrcccrc",
+    "12": "crcccccc",
+    "13": "ccrccccc",
+    "14": "cccccccc",
+    "15": "cccccccc",
+    "16": "ccrccccc",
+    "17": "cccccccc",
+    "18": "cccccccc",
+    "19": "cccccccc",
+    "20": "cccccccc",
+    "21": "cccccccc",
+    "22": "cccccccc",
+    "23": "crcccccc",
+    "24": "cccccccc"
+   },
+   "origem": "Foto 19.50.43",
+   "confirmar": null
+  },
+  {
+   "id": "g4",
+   "criancaId": "c9",
+   "livro": "alimentos",
+   "inicio": "2026-10-04",
+   "linhas": {
+    "1": "cccccccc",
+    "2": "ccrrcccc",
+    "3": "cccccccc",
+    "4": "cccccccc",
+    "5": "ccrccccc",
+    "6": "ccrccccc",
+    "7": "cccccccc",
+    "8": "cccccccc",
+    "9": "c-------"
+   },
+   "origem": "Foto 19.50.43 (1)",
+   "confirmar": null
+  },
+  {
+   "id": "g5",
+   "criancaId": "c6",
+   "livro": "alimentos",
+   "inicio": "2026-10-11",
+   "linhas": {
+    "1": "cccccccc",
+    "2": "ccrccccc",
+    "3": "crcccccc",
+    "4": "ccrccccc",
+    "5": "ccrccccr",
+    "6": "cceccccc",
+    "7": "cccccccc"
+   },
+   "origem": "Foto 19.50.44",
+   "confirmar": null
+  },
+  {
+   "id": "g6",
+   "criancaId": "c10",
+   "livro": "genesis",
+   "inicio": "2026-06-21",
+   "linhas": {
+    "1": "ccrccccc",
+    "2": "crrccccc",
+    "3": "cccccccc",
+    "4": "crcccccc",
+    "5": "ccrccccc",
+    "6": "cccccccc",
+    "7": "ccrccccc",
+    "8": "ccrrccrc",
+    "9": "ccccrccc",
+    "10": "cccccccc",
+    "11": "cccccccc",
+    "12": "cccccccc",
+    "13": "rccccccc",
+    "14": "cccccccc",
+    "15": "cccccccc",
+    "16": "cccccccc",
+    "17": "cccccccc",
+    "18": "rcrrccrc",
+    "19": "cccccccc",
+    "20": "cccccccc",
+    "21": "ccrccccc",
+    "22": "cccccccc",
+    "23": "cccccccc",
+    "24": "cccccccc",
+    "25": "crrrcccc",
+    "26": "rccrrrcc",
+    "27": "rccccccc",
+    "28": "cccrcccc",
+    "29": "crcccccc",
+    "30": "cccccccc",
+    "31": "cccccccc",
+    "32": "cccccrcc",
+    "33": "cccccccc",
+    "34": "ccrccccc",
+    "35": "cccccccc",
+    "36": "cccccccc",
+    "37": "cccccccc",
+    "38": "cccccccc",
+    "39": "cccccccc",
+    "40": "rrcccccc",
+    "41": "ccrccccc",
+    "42": "ccrrcccc",
+    "43": "cccccce-"
+   },
+   "origem": "Foto 19.50.44 (2) e 19.50.45",
+   "confirmar": "Exercícios 25 a 43 vêm de um verso sem nome (foto 19.50.45), atribuído pela ordem das fotos."
+  },
+  {
+   "id": "g7",
+   "criancaId": "c5",
+   "livro": "genesis",
+   "inicio": "2026-05-10",
+   "linhas": {
+    "1": "ccrrcccc",
+    "2": "ccccccrc",
+    "3": "ccccrccc",
+    "4": "ccccccrc",
+    "5": "crrccccc",
+    "6": "cccccccc",
+    "7": "cccrcccc",
+    "8": "ccrccccc",
+    "9": "cccccccc",
+    "10": "cccccccc",
+    "11": "ccccrccc",
+    "12": "crcccccc",
+    "13": "cccccccc",
+    "14": "cccccccc",
+    "15": "ccccccrc",
+    "16": "cccccccc",
+    "17": "ccccccrc",
+    "18": "ccccrccc",
+    "19": "cccccccc",
+    "20": "cccccccc",
+    "21": "ccrccccc",
+    "22": "cccccccc",
+    "23": "cccccccc",
+    "24": "cccccccc"
+   },
+   "origem": "Foto 19.50.45 (1)",
+   "confirmar": null
+  }
+ ],
+ "gabaritosSemNome": [
+  "Foto 19.50.41: verso (exercícios 25 a 29) sem nome do aluno.",
+  "Foto 19.50.44 (1): verso de Alimentos (exercícios 25 a 38, início 04/10/26) sem nome do aluno."
+ ],
  "alertas": [
   "JULIANA ARCANJO DIAS CAVALCANTE: 18 faltas antes da entrada (encontro 19) ignoradas",
   "LORENZO NASCIMENTO GAMA: 18 faltas antes da entrada (encontro 19) ignoradas",

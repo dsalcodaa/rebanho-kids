@@ -40,6 +40,12 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - **Meu setor** (líderes e membros): programação própria do setor (data, seção e tema, cadastrados pelos líderes) e equipe.
   Líderes e membros não têm a aba Cronograma.
 - Login: "Pastor (acesso total)" é o antigo Administrador.
+- **Bíblia Intelecto** (perfil próprio no login; quem está no setor Bíblia Intelecto): 13 livros; cada exercício tem 8 questões.
+  Gabarito por questão: ✓ acerto de primeira, ✗ errou, ↺ errou e corrigiu (bola vermelha com risco), · em branco.
+  Calcula acertos, erros, corrigidos, pendentes, taxa de acerto de primeira, nota 0–10, questões que a criança mais erra
+  e um parecer automático por aluno (o setor pode acrescentar uma observação). Resumo também na página da criança.
+- **Provas**: lançadas pelo Bíblia Intelecto (3 por ano), ranking por seção e média por rebanho. Professores só consultam.
+- Gabaritos iniciais transcritos das fotos de 09/11/2026 em `tools/gabaritos_fotos.json` (o importador os inclui em `dados.json`).
 - **Cadastro inicial**: link no login para novos membros; a liderança define função, setor e subordinação na aba Equipe.
 - **Login** por perfil (sem senha nesta versão de teste; senha e segurança reais vêm com o Supabase).
 - **Panorama**: pastor (coordenadores gerais, líderes gerais, coordenadoras de rebanho, líderes de seção),

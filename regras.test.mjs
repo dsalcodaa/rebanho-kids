@@ -118,3 +118,20 @@ test('crianças que precisam de atenção', () => {
 test('aniversariantes do mês', () => {
   assert.deepEqual(aniversariantes(db.criancas, 4).map((c) => c.nome.split(' ')[0]), ['ANA', 'ARÃO', 'EVELYN']);
 });
+
+test('Bíblia & Intelecto: acertos, erros corrigidos, pendentes e questão mais errada', async () => {
+  const { resumoGabaritos, parecerBI } = await import('./regras.js');
+  const g = [{ livro: 'x', linhas: { 1: 'crrrcrcc', 2: 'cccccccc', 3: 'recccccc', 4: 'c-------', 5: '--------' } }];
+  const r = resumoGabaritos(g);
+  assert.equal(r.exercicios, 4);
+  assert.equal(r.respondidas, 25);
+  assert.equal(r.acertos, 19);
+  assert.equal(r.corrigidos, 5);
+  assert.equal(r.pendentes, 1);
+  assert.equal(r.erros, 6);
+  assert.equal(r.nota, 7.6);
+  assert.deepEqual(r.porQuestao, [1, 2, 1, 1, 0, 1, 0, 0]);
+  assert.equal(r.completos, 2);
+  assert.match(parecerBI(r), /Desempenho regular: acertou de primeira 76%.*Mais erra a questão 2 \(2 vezes\)/);
+  assert.equal(parecerBI(resumoGabaritos([])), 'Sem gabarito lançado.');
+});

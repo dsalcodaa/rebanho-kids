@@ -1,6 +1,6 @@
 import {
   SUPERIOR, aniversariantes, avaliarDesafio, descendentes, encontrosRealizados, frequenciaPorMes, mediaNotas, mediaTurma,
-  motivosAtencao, rebanhosVisiveis,
+  motivosAtencao, parecerBI, rebanhosVisiveis, resumoGabaritos,
   resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio,
 } from './regras.js';
 
@@ -76,6 +76,7 @@ const CADASTRA = {
 
 const SETOR_PROFESSOR = 'Professores de Rebanho';
 const SETOR_RECEPCAO = 'Recepção';
+const SETOR_BI = 'Bíblia Intelecto';
 const LIDERES = ['lider_geral', 'lider_secao', 'membro_setor'];
 
 // Sessão: 'admin' ou id da pessoa. shortcut: login sem senha (teste); senha de verdade vem com o Supabase.
@@ -87,6 +88,9 @@ const editaCronograma = () => ['admin', 'pastor'].includes(papel());
 // Recepção: equipe de setor cujo setor é "Recepção". Cadastra crianças e marca presença.
 const ehRecepcao = () => LIDERES.includes(papel()) && setoresDe(eu()).includes(SETOR_RECEPCAO);
 const cadastraCrianca = () => papel() === 'admin' || ehRecepcao();
+// Bíblia Intelecto: corrige os gabaritos dos 13 livros e aplica as provas.
+const ehBI = () => LIDERES.includes(papel()) && setoresDe(eu()).includes(SETOR_BI);
+const lancaBI = () => papel() === 'admin' || ehBI();
 // Lançamentos completos (versículos, meditação, notas): só professores de rebanho.
 const lancaTudo = () => papel() === 'professor';
 const lancaPresenca = () => lancaTudo() || ehRecepcao();
@@ -101,7 +105,9 @@ const ABAS = [
   ['equipe', 'Equipes e Setores', TODOS],
   ['rebanhos', 'Rebanhos', ['admin', 'pastor', 'coord_geral', 'coord_rebanho']],
   ['encontros', 'Lançamentos', lancaTudo],
-  ['criancas', 'Crianças', () => ENSINO.includes(papel()) || ehRecepcao()],
+  ['intelecto', 'Bíblia Intelecto', () => ENSINO.includes(papel()) || ehBI()],
+  ['provas', 'Provas', () => ENSINO.includes(papel()) || ehBI()],
+  ['criancas', 'Crianças', () => ENSINO.includes(papel()) || ehRecepcao() || ehBI()],
   ['desafios', 'Desafios', ENSINO],
   ['dados', 'Dados', ['admin', 'pastor']],
 ];
@@ -122,9 +128,11 @@ const ORDEM_COR = Object.keys(CORES);
 const ordemRebanho = (a, b) => (a.secaoId ?? 'z').localeCompare(b.secaoId ?? 'z')
   || TURMAS.indexOf(a.turma) - TURMAS.indexOf(b.turma) || ORDEM_COR.indexOf(a.cor) - ORDEM_COR.indexOf(b.cor);
 // Recepção enxerga os rebanhos da sua seção (ou todos, se a seção não foi definida).
-const secoesRecepcao = () => atuacoes(eu()).filter((a) => a.setor === SETOR_RECEPCAO).map((a) => a.secaoId);
-const meusRebanhos = () => (ehRecepcao()
-  ? db.rebanhos.filter((r) => { const ss = secoesRecepcao(); return !ss.length || ss.includes('') || ss.includes(r.secaoId); })
+const secoesDoSetor = (...nomes) => atuacoes(eu()).filter((a) => nomes.includes(a.setor)).map((a) => a.secaoId);
+const secoesRecepcao = () => secoesDoSetor(SETOR_RECEPCAO);
+// Recepção e Bíblia Intelecto enxergam os rebanhos das seções em que atuam.
+const meusRebanhos = () => (ehRecepcao() || ehBI()
+  ? db.rebanhos.filter((r) => { const ss = secoesDoSetor(SETOR_RECEPCAO, SETOR_BI); return !ss.length || ss.includes('') || ss.includes(r.secaoId); })
   : [...rebanhosVisiveis(db, eu())]).sort(ordemRebanho);
 const rebanho = (id) => db.rebanhos.find((r) => r.id === id);
 const acharRebanho = (secaoId, turma, cor) => db.rebanhos.find((r) => r.secaoId === secaoId && r.turma === turma && r.cor === cor);
@@ -180,9 +188,11 @@ function montarTopo() {
 // ---------- Login ----------
 function login() {
   // Recepção tem perfil próprio no login
-  const recep = (p) => LIDERES.includes(p.papel) && setoresDe(p).includes(SETOR_RECEPCAO);
-  const grupos = [...Object.entries(PAPEIS).map(([k, t]) => [k, t, db.pessoas.filter((p) => p.papel === k && !recep(p))]),
-    ['recepcao', 'Recepção', db.pessoas.filter(recep)]].filter(([, , ps]) => ps.length);
+  const doSetor = (nome) => (p) => LIDERES.includes(p.papel) && setoresDe(p).includes(nome);
+  const proprio = (p) => doSetor(SETOR_RECEPCAO)(p) || doSetor(SETOR_BI)(p);
+  const grupos = [...Object.entries(PAPEIS).map(([k, t]) => [k, t, db.pessoas.filter((p) => p.papel === k && !proprio(p))]),
+    ['recepcao', 'Recepção', db.pessoas.filter(doSetor(SETOR_RECEPCAO))],
+    ['bi', 'Bíblia Intelecto', db.pessoas.filter(doSetor(SETOR_BI))]].filter(([, , ps]) => ps.length);
   app.innerHTML = `
     <div class="login card">
       <span class="logo grande">RK</span>
@@ -1110,6 +1120,228 @@ function encontro(id, rid, rota = '#/encontro') {
   };
 }
 
+// ---------- Bíblia & Intelecto ----------
+const livroBI = (id) => db.livrosBI.find((l) => l.id === id);
+const nomeLivro = (id) => { const l = livroBI(id); return l ? `${l.nivel} – ${l.nome}` : id; };
+const gabaritosDe = (cid) => db.gabaritos.filter((g) => g.criancaId === cid).sort((a, b) => (a.inicio ?? '').localeCompare(b.inicio ?? ''));
+const resumoBI = (cid) => resumoGabaritos(gabaritosDe(cid));
+const SIMBOLO = { c: ['✓', 'acerto de primeira', 'c'], e: ['✗', 'errou (sem correção)', 'e'], r: ['↺', 'errou e corrigiu', 'r'], '-': ['·', 'em branco', 'v'] };
+const CICLO = ['c', 'e', 'r', '-'];
+const maisErra = (r) => { const m = Math.max(0, ...r.porQuestao); return m ? r.porQuestao.map((n, i) => (n === m ? `Q${i + 1}` : '')).filter(Boolean).join(', ') : '—'; };
+
+function barrasQuestoes(porQuestao) {
+  const max = Math.max(1, ...porQuestao);
+  return `<div class="barras" role="img" aria-label="Erros por questão: ${porQuestao.map((n, i) => `questão ${i + 1}, ${n}`).join('; ')}">
+    ${porQuestao.map((n, i) => `<div class="barra"><span class="valor">${n}</span><span class="trilho"><span class="col erro" style="height:${Math.round((n / max) * 100)}%"></span></span>
+      <span class="mes">Q${i + 1}</span></div>`).join('')}</div>`;
+}
+
+// Botões de seção (Todas + cada seção com crianças) para as telas do setor.
+function filtroSecao(destino, sid, cs) {
+  const secoes = db.secoes.filter((s) => cs.some((c) => rebanho(c.rebanhoId)?.secaoId === s.id));
+  if (secoes.length < 2) return '';
+  return `<div class="acoes"><a class="btn ${sid ? 'sec' : ''}" href="#/${destino}">Todas as seções</a>
+    ${secoes.map((s) => `<a class="btn ${s.id === sid ? '' : 'sec'}" href="#/${destino}/${s.id}">${esc(s.nome)}</a>`).join('')}</div>`;
+}
+
+function intelecto(sid) {
+  const todas = minhasCriancas().filter((c) => c.ativa);
+  const cs = todas.filter((c) => !sid || rebanho(c.rebanhoId)?.secaoId === sid);
+  const linhas = cs.map((c) => ({ c, g: gabaritosDe(c.id), r: resumoBI(c.id) }));
+  const com = linhas.filter((x) => x.r.respondidas).sort((a, b) => b.r.taxa - a.r.taxa);
+  const tot = resumoGabaritos(com.flatMap((x) => x.g));
+  const notas = com.map((x) => x.r.nota);
+  const porLivro = db.livrosBI.map((l) => [l, com.filter((x) => x.g.at(-1)?.livro === l.id).length]).filter(([, n]) => n);
+  const card = (n, t) => `<div class="card"><div class="num">${n}</div><div class="rot">${t}</div></div>`;
+  app.innerHTML = `
+    <h1>Bíblia & Intelecto</h1>
+    <p class="sub">Coleção de 13 livros. A criança preenche a folha de respostas e um membro do setor corrige pelo gabarito:
+      marca vermelha = erro; bola com risco = erro corrigido pela criança.</p>
+    ${filtroSecao('intelecto', sid, todas)}
+    <div class="cards">
+      ${card(`${com.length}/${cs.length}`, 'crianças com gabarito')}
+      ${card(pct(tot.taxa), 'acerto de primeira')}
+      ${card(nota(notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null), 'nota média (0 a 10)')}
+      ${card(tot.exercicios, 'exercícios corrigidos')}
+      ${card(tot.corrigidos, 'erros corrigidos')}
+      ${card(tot.pendentes, 'erros aguardando correção')}
+    </div>
+    <div class="duas">
+      <div class="card"><strong>Questões mais erradas (1 a 8)</strong>${barrasQuestoes(tot.porQuestao)}</div>
+      <div class="card"><strong>Livro atual das crianças</strong>
+        <ul class="lista">${porLivro.map(([l, n]) => `<li>${esc(`${l.nivel} – ${l.nome}`)}: <strong>${n}</strong></li>`).join('') || '<li class="vazio">Nenhum gabarito.</li>'}</ul></div>
+    </div>
+    <h2>Desempenho por criança</h2>
+    <div class="rolar"><table class="tabela">
+      <tr><th>#</th><th>Criança</th><th>Rebanho</th><th>Livro atual</th><th>Exercícios</th><th>Acertos 1ª</th><th>Erros</th><th>Corrigidos</th><th>Pendentes</th><th>Taxa</th><th>Nota</th><th>Mais erra</th></tr>
+      ${com.map((x, i) => `<tr><td>${i + 1}º</td><td><a href="#/gabarito/${x.c.id}">${esc(x.c.nome)}</a></td><td>${ondeEsta(x.c)}</td>
+        <td>${esc(nomeLivro(x.g.at(-1).livro))}</td><td>${x.r.exercicios}</td><td>${x.r.acertos}/${x.r.respondidas}</td><td>${x.r.erros}</td>
+        <td>${x.r.corrigidos}</td><td>${x.r.pendentes ? `<span class="tag nao">${x.r.pendentes}</span>` : 0}</td>
+        <td>${pct(x.r.taxa)}</td><td><strong>${nota(x.r.nota)}</strong></td><td>${maisErra(x.r)}</td></tr>`).join('') || vazioLinha(12, 'Nenhum gabarito lançado.')}
+      ${linhas.filter((x) => !x.r.respondidas).map((x) => `<tr><td></td><td><a href="#/gabarito/${x.c.id}">${esc(x.c.nome)}</a></td><td>${ondeEsta(x.c)}</td>
+        <td colspan="9" class="vazio">sem gabarito lançado</td></tr>`).join('')}
+    </table></div>
+    <h2>Parecer por aluno</h2>
+    <div class="pareceres">${com.map((x) => `<div class="card"><strong><a href="#/gabarito/${x.c.id}">${esc(x.c.nome)}</a></strong>
+      <span class="vazio pequeno">· ${esc(x.g.map((g) => livroBI(g.livro)?.nome).join(', '))}</span>
+      <p>${esc(parecerBI(x.r))}</p>${x.c.obsBI ? `<p><strong>Observação do setor:</strong> ${esc(x.c.obsBI)}</p>` : ''}</div>`).join('') || '<p class="vazio">Sem pareceres.</p>'}</div>
+    ${db.gabaritosSemNome?.length && lancaBI() ? `<p class="info alerta" style="margin-top:1rem">Folhas sem nome para conferir: ${db.gabaritosSemNome.map(esc).join(' ')}</p>` : ''}`;
+}
+
+function gabaritoPagina(cid, gid) {
+  const c = minhasCriancas().find((x) => x.id === cid);
+  if (!c) return (app.innerHTML = '<p class="vazio">Criança não encontrada ou sem permissão.</p>');
+  const gs = gabaritosDe(cid);
+  const r = resumoGabaritos(gs);
+  const pode = lancaBI();
+  const g = gs.find((x) => x.id === gid);
+  const rasc = g ? { ...g.linhas } : {};
+  const errosLinha = (l) => [...l].filter((x) => x === 'r' || x === 'e').length;
+  const card = (n, t) => `<div class="card"><div class="num">${n}</div><div class="rot">${t}</div></div>`;
+  app.innerHTML = `
+    <p><a href="#/intelecto">← Bíblia & Intelecto</a></p>
+    <h1>${esc(c.nome)}</h1>
+    <p class="sub">${ondeEsta(c)}</p>
+    <div class="info"><strong>Parecer:</strong> ${esc(parecerBI(r))}${c.obsBI ? `<br><strong>Observação do setor:</strong> ${esc(c.obsBI)}` : ''}</div>
+    <div class="cards">${card(nota(r.nota), 'nota (0 a 10)')}${card(pct(r.taxa), 'acerto de primeira')}${card(r.exercicios, 'exercícios')}
+      ${card(r.erros, 'erros')}${card(r.corrigidos, 'corrigidos')}${card(r.pendentes, 'aguardando correção')}</div>
+    <div class="duas">
+      <div class="card"><strong>Erros por questão (1 a 8)</strong>${barrasQuestoes(r.porQuestao)}</div>
+      <div class="card"><strong>Exercícios com mais erros</strong>
+        <ul class="lista">${r.piores.map((x) => `<li>${esc(livroBI(x.livro)?.nome ?? x.livro)} · exercício ${x.ex}: <strong>${x.erros}</strong> erro(s)</li>`).join('') || '<li class="vazio">Nenhum erro.</li>'}</ul></div>
+    </div>
+    <h2>Livros</h2>
+    <div class="rolar"><table class="tabela">
+      <tr><th>Livro</th><th>Início</th><th>Exercícios</th><th>Acertos 1ª</th><th>Erros</th><th>Pendentes</th><th>Taxa</th><th></th></tr>
+      ${gs.map((x) => { const q = resumoGabaritos([x]);
+        return `<tr><td>${esc(nomeLivro(x.livro))}${x.confirmar ? ' <span class="tag fora">conferir</span>' : ''}</td><td>${fmt(x.inicio)}</td><td>${q.exercicios}</td>
+          <td>${q.acertos}/${q.respondidas}</td><td>${q.erros}</td><td>${q.pendentes}</td><td>${pct(q.taxa)}</td>
+          <td><a class="btn sec" href="#/gabarito/${c.id}/${x.id}">${pode ? 'Corrigir' : 'Ver'}</a></td></tr>`; }).join('') || vazioLinha(8, 'Nenhum gabarito.')}
+    </table></div>
+    ${pode ? `<form class="grade" id="novoGab" style="margin-top:.75rem">
+      <label>Livro <select name="livro">${opcoes(db.livrosBI.map((l) => [l.id, `${l.nivel} – ${l.nome}`]))}</select></label>
+      <label>Início <input type="date" name="inicio" required value="${hoje()}"></label>
+      <div style="align-self:end"><button class="btn sec">Novo gabarito</button></div></form>
+    <form class="grade" id="obs" style="margin-top:.5rem"><label>Observação do setor <input name="obsBI" value="${esc(c.obsBI)}"></label>
+      <div style="align-self:end"><button class="btn sec">Salvar observação</button></div></form>` : ''}
+    ${g ? `<h2 id="editor">${esc(nomeLivro(g.livro))} · início ${fmt(g.inicio)}</h2>
+    ${g.confirmar ? `<p class="info alerta">${esc(g.confirmar)}</p>` : ''}
+    ${g.origem ? `<p class="vazio pequeno">${esc(g.origem)}</p>` : ''}
+    <p class="sub">${pode ? 'Clique na questão para trocar: ' : ''}✓ acerto de primeira · ✗ errou · ↺ errou e corrigiu · · em branco</p>
+    <div class="rolar"><table class="tabela gabarito">
+      <tr><th>Exercício</th>${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => `<th>${n}</th>`).join('')}<th>Erros</th></tr>
+      ${Object.keys(rasc).sort((a, b) => a - b).map((ex) => `<tr><td>${ex})</td>${[...rasc[ex]].map((x, i) => `<td>
+        <button type="button" class="q ${SIMBOLO[x][2]}" data-ex="${ex}" data-i="${i}" ${pode ? '' : 'disabled'} title="Questão ${i + 1}: ${SIMBOLO[x][1]}">${SIMBOLO[x][0]}</button></td>`).join('')}
+        <td data-erros="${ex}">${errosLinha(rasc[ex])}</td></tr>`).join('')}
+    </table></div>
+    ${pode ? `<div class="acoes"><button type="button" class="btn sec" id="maisEx">+ Exercício</button>
+      <button type="button" class="btn" id="salvarGab">Salvar gabarito</button>
+      <button type="button" class="btn perigo" id="excluirGab">Excluir gabarito</button></div>` : ''}` : ''}`;
+  if (g) document.getElementById('editor').scrollIntoView();
+  if (!pode) return;
+  document.getElementById('novoGab').onsubmit = (ev) => {
+    ev.preventDefault();
+    const d = dadosDoForm(ev.target);
+    const novo = { id: `g${Date.now()}`, criancaId: c.id, livro: d.livro, inicio: d.inicio, linhas: { 1: 'cccccccc' } };
+    db.gabaritos.push(novo);
+    salvar('Gabarito criado');
+    location.hash = `#/gabarito/${c.id}/${novo.id}`;
+  };
+  document.getElementById('obs').onsubmit = (ev) => {
+    ev.preventDefault();
+    c.obsBI = ev.target.obsBI.value.trim();
+    salvar('Observação salva');
+    gabaritoPagina(cid, gid);
+  };
+  if (!g) return;
+  app.querySelectorAll('.q').forEach((b) => {
+    b.onclick = () => {
+      const l = [...rasc[b.dataset.ex]];
+      const x = CICLO[(CICLO.indexOf(l[b.dataset.i]) + 1) % CICLO.length];
+      l[b.dataset.i] = x;
+      rasc[b.dataset.ex] = l.join('');
+      b.className = `q ${SIMBOLO[x][2]}`;
+      b.textContent = SIMBOLO[x][0];
+      b.title = `Questão ${Number(b.dataset.i) + 1}: ${SIMBOLO[x][1]}`;
+      app.querySelector(`[data-erros="${b.dataset.ex}"]`).textContent = errosLinha(rasc[b.dataset.ex]);
+    };
+  });
+  document.getElementById('maisEx').onclick = () => {
+    rasc[Math.max(0, ...Object.keys(rasc).map(Number)) + 1] = 'cccccccc';
+    g.linhas = rasc;
+    salvar('Exercício adicionado');
+    gabaritoPagina(cid, gid);
+  };
+  document.getElementById('salvarGab').onclick = () => {
+    g.linhas = rasc;
+    salvar('Gabarito salvo');
+    gabaritoPagina(cid, gid);
+  };
+  document.getElementById('excluirGab').onclick = () => {
+    if (!confirm(`Excluir o gabarito de ${nomeLivro(g.livro)}?`)) return;
+    db.gabaritos = db.gabaritos.filter((x) => x !== g);
+    salvar('Gabarito excluído');
+    location.hash = `#/gabarito/${c.id}`;
+  };
+}
+
+// ---------- Provas (aplicadas pelo Bíblia Intelecto) ----------
+function provas(sid) {
+  const todas = minhasCriancas().filter((c) => c.ativa);
+  const cs = todas.filter((c) => !sid || rebanho(c.rebanhoId)?.secaoId === sid);
+  const pode = lancaBI();
+  const media = (c) => mediaNotas(db.notas[c.id]);
+  const porNota = (a, b) => (media(b) ?? -1) - (media(a) ?? -1) || a.nome.localeCompare(b.nome);
+  const secoes = db.secoes.filter((s) => cs.some((c) => rebanho(c.rebanhoId)?.secaoId === s.id));
+  const daSecao = (s) => cs.filter((c) => rebanho(c.rebanhoId)?.secaoId === s.id).sort(porNota);
+  const rebs = [...new Set(cs.map((c) => c.rebanhoId))].map(rebanho).filter(Boolean).sort(ordemRebanho);
+  const mediaProva = (lista, pid) => mediaNotas(Object.fromEntries(lista.map((c) => [c.id, db.notas[c.id]?.[pid]])));
+  app.innerHTML = `
+    <h1>Provas</h1>
+    <p class="sub">Aplicadas pelo setor Bíblia Intelecto: ${db.provas.length} provas no ano, nota de 0 a ${db.notaMaxima}.</p>
+    ${filtroSecao('provas', sid, todas)}
+    ${pode ? `<h2>Lançar notas</h2>
+    <form id="notasBI"><div class="rolar"><table class="tabela">
+      <tr><th>Criança</th><th>Rebanho</th>${db.provas.map((x) => `<th>${esc(x.nome)}</th>`).join('')}</tr>
+      ${[...cs].sort((a, b) => ordemRebanho(rebanho(a.rebanhoId), rebanho(b.rebanhoId)) || a.nome.localeCompare(b.nome)).map((c) => `<tr><td>${esc(c.nome)}</td><td>${ondeEsta(c)}</td>
+        ${db.provas.map((x) => `<td><input class="nota" type="number" min="0" max="${db.notaMaxima}" step="0.1" name="${c.id}|${x.id}"
+          aria-label="${esc(`${x.nome} de ${c.nome}`)}" value="${db.notas[c.id]?.[x.id] ?? ''}"></td>`).join('')}</tr>`).join('') || vazioLinha(2 + db.provas.length, 'Nenhuma criança.')}
+    </table></div>
+    <div class="acoes"><button class="btn">Salvar notas</button></div></form>` : ''}
+    <h2>Ranking por seção</h2>
+    ${secoes.map((s) => { const lista = daSecao(s);
+      return `<h3>${esc(s.nome)} <span class="vazio pequeno">${esc(s.horario)}</span></h3>
+      <div class="rolar"><table class="tabela">
+        <tr><th>#</th><th>Criança</th><th>Rebanho</th>${db.provas.map((x) => `<th>${esc(x.nome)}</th>`).join('')}<th>Média</th></tr>
+        ${lista.map((c, i) => `<tr><td>${media(c) != null ? `${i + 1}º` : '—'}</td><td><a href="#/crianca/${c.id}">${esc(c.nome)}</a></td><td>${ondeEsta(c)}</td>
+          ${db.provas.map((x) => `<td>${nota(db.notas[c.id]?.[x.id])}</td>`).join('')}<td><strong>${nota(media(c))}</strong></td></tr>`).join('')}
+        <tr><td></td><td><strong>Média da seção</strong></td><td></td>${db.provas.map((x) => `<td>${nota(mediaProva(lista, x.id))}</td>`).join('')}
+          <td><strong>${nota(mediaTurma(db, lista))}</strong></td></tr>
+      </table></div>`; }).join('') || '<p class="vazio">Nenhuma criança.</p>'}
+    <h2>Média por turma e rebanho</h2>
+    <div class="rolar"><table class="tabela">
+      <tr><th>Rebanho</th><th>Crianças</th>${db.provas.map((x) => `<th>${esc(x.nome)}</th>`).join('')}<th>Média</th></tr>
+      ${rebs.map((r) => { const lista = cs.filter((c) => c.rebanhoId === r.id);
+        return `<tr><td>${bolinha(r)}${esc(nomeRebanho(r))}</td><td>${lista.length}</td>${db.provas.map((x) => `<td>${nota(mediaProva(lista, x.id))}</td>`).join('')}
+          <td><strong>${nota(mediaTurma(db, lista))}</strong></td></tr>`; }).join('')}
+    </table></div>`;
+  const f = document.getElementById('notasBI');
+  if (f) f.onsubmit = (ev) => {
+    ev.preventDefault();
+    const campos = [...f.querySelectorAll('input.nota')];
+    const ruim = campos.find((x) => x.value !== '' && !(Number(x.value) >= 0 && Number(x.value) <= db.notaMaxima));
+    if (ruim) { ruim.focus(); return aviso(`Notas devem ficar entre 0 e ${db.notaMaxima}`); }
+    for (const x of campos) {
+      const [cid, pid] = x.name.split('|');
+      db.notas[cid] ??= {};
+      // Campo vazio = prova ainda não aplicada (diferente de nota zero)
+      if (x.value === '') delete db.notas[cid][pid]; else db.notas[cid][pid] = Number(x.value);
+    }
+    salvar('Notas salvas');
+    provas(sid);
+  };
+}
+
 // ---------- Crianças ----------
 function criancas() {
   const mostrar = sessionStorage.getItem('inativas') === '1';
@@ -1201,7 +1433,7 @@ function crianca(id) {
       <div class="card"><div class="num">${nota(mediaNotas(db.notas[c.id]))}</div><div class="rot">média das provas</div></div>
     </div>
 
-    ${lancaTudo() ? `<h2>Notas de prova</h2>
+    ${lancaBI() ? `<h2>Notas de prova</h2>
     <form class="grade" id="notas">
       ${db.provas.map((p) => `<label>${esc(p.nome)} (0 a ${db.notaMaxima})
         <input type="number" name="${p.id}" min="0" max="${db.notaMaxima}" step="0.1" value="${db.notas[c.id]?.[p.id] ?? ''}"></label>`).join('')}
@@ -1213,6 +1445,12 @@ function crianca(id) {
       ${db.desafios.map((d) => { const a = avaliarDesafio(db, d, c);
         return `<tr><td><a href="#/desafio/${d.id}">${esc(d.nome)}</a></td><td>${tag(a.status)}</td><td>${a.pontos ?? '—'}/${d.versiculosMin}</td><td>${esc(a.motivos.join('; '))}</td></tr>`; }).join('')}
     </table></div>
+
+    <h2>Bíblia & Intelecto</h2>
+    ${(() => { const rb = resumoBI(c.id);
+      return `<div class="info">${rb.respondidas ? `<strong>Nota ${nota(rb.nota)}</strong> · acerto de primeira ${pct(rb.taxa)} · ${rb.erros} erro(s), ${rb.corrigidos} corrigido(s), ${rb.pendentes} aguardando correção<br>` : ''}
+        ${esc(parecerBI(rb))}${c.obsBI ? `<br><strong>Observação do setor:</strong> ${esc(c.obsBI)}` : ''}
+        <br><a href="#/gabarito/${c.id}">Ver gabaritos e questões mais erradas</a></div>`; })()}
 
     <h2>Histórico</h2>
     <div class="rolar"><table class="tabela"><tr><th>Data</th><th>Kids</th><th>Culto</th><th>Versículos decorados</th><th>Meditação</th></tr>
@@ -1380,12 +1618,13 @@ function dados() {
 // ---------- Rotas ----------
 const rotas = {
   '': painel, painel, panorama, setor: meuSetor, recepcao, presenca, cronograma, data: dataCronograma, equipe, pessoa: pessoaPagina,
-  rebanhos, rebanho: rebanhoPagina, encontros, encontro, criancas, crianca, desafios, desafio, dados,
+  rebanhos, rebanho: rebanhoPagina, encontros, encontro, intelecto, gabarito: gabaritoPagina, provas,
+  criancas, crianca, desafios, desafio, dados,
 };
 // Aba do menu marcada em cada rota
 const ABA_DA_ROTA = {
   painel: '', data: 'cronograma', pessoa: 'equipe', rebanho: 'rebanhos', encontro: 'encontros', presenca: 'recepcao',
-  crianca: 'criancas', desafio: 'desafios',
+  crianca: 'criancas', desafio: 'desafios', gabarito: 'intelecto',
 };
 
 function rotear() {
