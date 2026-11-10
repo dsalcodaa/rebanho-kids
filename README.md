@@ -21,7 +21,8 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 
 ## Organograma e abas
 - Ensino: Pastores → Coordenadores gerais → Coordenadores de rebanho → Professores → Crianças.
-- Setores: Pastores → Líderes gerais → Líderes de setor (o perfil Membro da equipe saiu).
+- Setores: Pastores → Líderes gerais → Líderes de setor → Membros de equipe.
+  Errata: Membro de equipe voltou, mas sem login (não edita nada); líder geral e líder de setor cadastram membros.
 - Turmas 1 a 4 (A, B, C); seções 08:00–10:00, 10:30–12:30, 15:30–17:30, 18:30–20:30.
 - Em cada seção, cada turma (1A a 4C) tem os rebanhos Azul, Verde, Amarelo e Vermelho: 192 rebanhos (o 2A Verde da planilha está na 2ª seção).
 - Setores: História Bíblica, Revisão e Retenção, Momento Alegria, Bíblia Intelecto, Professores de Rebanho e Recepção (novos setores na aba Equipe).

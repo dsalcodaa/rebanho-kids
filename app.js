@@ -56,6 +56,7 @@ const PAPEIS = {
   professor: 'Professor de rebanho',
   lider_geral: 'Líder geral',
   lider_secao: 'Líder de setor', // chave antiga mantida para não perder cadastros salvos
+  membro_setor: 'Membro de equipe', // sem login: não edita nada
 };
 const TURMAS = [1, 2, 3, 4].flatMap((n) => ['A', 'B', 'C'].map((l) => `${n}${l}`));
 const ENSINO = ['admin', 'pastor', 'coord_geral', 'coord_rebanho', 'professor'];
@@ -64,22 +65,23 @@ const TODOS = [...ENSINO, 'lider_geral', 'lider_secao'];
 // Quem cada perfil cadastra (organograma das telas).
 const CADASTRA = {
   admin: Object.keys(PAPEIS),
-  pastor: ['coord_geral', 'coord_rebanho', 'professor', 'lider_geral', 'lider_secao'],
+  pastor: ['coord_geral', 'coord_rebanho', 'professor', 'lider_geral', 'lider_secao', 'membro_setor'],
   coord_geral: ['coord_rebanho'],
   coord_rebanho: ['professor'],
   professor: ['professor'],
-  lider_geral: ['lider_secao'],
-  lider_secao: [],
+  lider_geral: ['lider_secao', 'membro_setor'],
+  lider_secao: ['membro_setor'],
 };
 
 const SETOR_PROFESSOR = 'Professores de Rebanho';
 const SETOR_RECEPCAO = 'Recepção';
 const SETOR_BI = 'Bíblia Intelecto';
 const LIDERES = ['lider_geral', 'lider_secao'];
+const EQUIPE_SETOR = [...LIDERES, 'membro_setor'];
 
 // Sessão: 'admin' ou id da pessoa. shortcut: login sem senha (teste); senha de verdade vem com o Supabase.
 const sessao = () => localStorage.getItem(CHAVE_PERFIL);
-const eu = () => db.pessoas.find((p) => p.id === sessao() && PAPEIS[p.papel]) || null;
+const eu = () => db.pessoas.find((p) => p.id === sessao() && PAPEIS[p.papel] && p.papel !== 'membro_setor') || null;
 const logado = () => sessao() === 'admin' || !!eu();
 const papel = () => eu()?.papel ?? 'admin';
 const editaCronograma = () => ['admin', 'pastor'].includes(papel());
@@ -188,7 +190,7 @@ function login() {
   // Recepção tem perfil próprio no login
   const doSetor = (nome) => (p) => LIDERES.includes(p.papel) && setoresDe(p).includes(nome);
   const proprio = (p) => doSetor(SETOR_RECEPCAO)(p) || doSetor(SETOR_BI)(p);
-  const grupos = [...Object.entries(PAPEIS).map(([k, t]) => [k, t, db.pessoas.filter((p) => p.papel === k && !proprio(p))]),
+  const grupos = [...Object.entries(PAPEIS).filter(([k]) => k !== 'membro_setor').map(([k, t]) => [k, t, db.pessoas.filter((p) => p.papel === k && !proprio(p))]),
     ['recepcao', 'Recepção', db.pessoas.filter(doSetor(SETOR_RECEPCAO))],
     ['bi', 'Bíblia Intelecto', db.pessoas.filter(doSetor(SETOR_BI))]].filter(([, , ps]) => ps.length);
   app.innerHTML = `
@@ -445,7 +447,7 @@ function panorama() {
       <h1>Panorama do ministério</h1>
       <p class="sub">Desempenho dos rebanhos e crianças: aba <a href="#/">Painel</a>.</p>
       ${cards([[de('coord_geral').length, 'coordenadores gerais'], [de('coord_rebanho').length, 'coordenadoras de rebanho'],
-        [de('professor').length, 'professores'], [de('lider_geral').length, 'líderes gerais'], [de('lider_secao').length, 'líderes de setor'],
+        [de('professor').length, 'professores'], [de('lider_geral').length, 'líderes gerais'], [de('lider_secao').length, 'líderes de setor'], [de('membro_setor').length, 'membros de equipe'],
         [total.criancas, 'crianças ativas'], [pct(total.kids), 'frequência média no Kids']])}
       <h2>Líderes e coordenadores gerais</h2>
       ${tabelaCoordGerais(de('coord_geral'))}
@@ -595,9 +597,9 @@ function dataCronograma(id) {
 }
 
 // ---------- Equipes e Setores ----------
-const COM_ATUACAO = ['coord_geral', 'coord_rebanho', 'professor', ...LIDERES];
+const COM_ATUACAO = ['coord_geral', 'coord_rebanho', 'professor', ...EQUIPE_SETOR];
 const RAMO_ENSINO = ['pastor', 'coord_geral', 'coord_rebanho', 'professor'];
-const RAMO_SETORES = ['pastor', ...LIDERES];
+const RAMO_SETORES = ['pastor', ...EQUIPE_SETOR];
 // Caminho da criança na seção: começa na Recepção e passa pelos setores (Professores de Rebanho conduzem).
 const setoresDoFluxo = () => [...db.setores.filter((st) => st.nome === SETOR_RECEPCAO),
   ...db.setores.filter((st) => ![SETOR_RECEPCAO, SETOR_PROFESSOR].includes(st.nome))];
@@ -746,7 +748,7 @@ function equipe() {
     const gente = (k) => todos.filter((p) => p.papel === k && setoresDe(p).includes(st.nome));
     const lista = (k) => gente(k).map((p) => `${nome(p)}${ondeNoSetor(p, st) ? ` <span class="vazio">(${esc(ondeNoSetor(p, st))})</span>` : ''}`).join('<br>');
     return `<div class="card setor" style="border-top-color:${COR_SETOR[i % COR_SETOR.length]}"><h3>${esc(st.nome)}</h3>
-      ${[...LIDERES, 'professor'].map((k) => gente(k).length ? `<p><span class="papel">${PAPEIS[k]}</span><br>${lista(k)}</p>` : '').join('') || '<p class="vazio">ninguém cadastrado</p>'}</div>`;
+      ${[...EQUIPE_SETOR, 'professor'].map((k) => gente(k).length ? `<p><span class="papel">${PAPEIS[k]}</span><br>${lista(k)}</p>` : '').join('') || '<p class="vazio">ninguém cadastrado</p>'}</div>`;
   };
   const fluxo = (s) => {
     const etapas = setoresDoFluxo().filter((st) => setoresVis.includes(st));
@@ -786,7 +788,7 @@ function equipe() {
       ${verEnsino ? `<div class="card"><h3>Ensino: coordenadoras e professores</h3>
         <p class="vazio pequeno">Pastores → Coordenadores gerais → Coordenadoras de rebanho → Professores de rebanho</p>${arvore(RAMO_ENSINO)}</div>` : ''}
       ${verSetores ? `<div class="card"><h3>Setores: líderes gerais</h3>
-        <p class="vazio pequeno">Pastores → Líderes gerais → Líderes de setor</p>${arvore(RAMO_SETORES)}</div>` : ''}
+        <p class="vazio pequeno">Pastores → Líderes gerais → Líderes de setor → Membros de equipe</p>${arvore(RAMO_SETORES)}</div>` : ''}
     </div>
 
     ${verSetores ? `<h2>Setores</h2>
@@ -973,8 +975,8 @@ function meuSetor(sid) {
   const edita = ['lider_geral', 'lider_secao'].includes(p.papel);
   const secoesNoSetor = (x) => atuacoes(x).filter((a) => a.setor === st.nome).map((a) => secao(a.secaoId)?.nome).filter(Boolean).join(', ');
   const minhas = atuacoes(p).filter((a) => a.setor === st.nome).map((a) => a.secaoId).filter(Boolean);
-  const gente = db.pessoas.filter((x) => LIDERES.includes(x.papel) && setoresDe(x).includes(st.nome))
-    .sort((a, b) => LIDERES.indexOf(a.papel) - LIDERES.indexOf(b.papel) || a.nome.localeCompare(b.nome));
+  const gente = db.pessoas.filter((x) => EQUIPE_SETOR.includes(x.papel) && setoresDe(x).includes(st.nome))
+    .sort((a, b) => EQUIPE_SETOR.indexOf(a.papel) - EQUIPE_SETOR.indexOf(b.papel) || a.nome.localeCompare(b.nome));
   const prog = [...(db.programacoes?.[st.id] || [])].sort((a, b) => a.data.localeCompare(b.data));
   const campo = CAMPO_SETOR[st.nome] ?? 'Tema';
   const datas = ordenados().filter((e) => e.tipo !== 'sem_aula');
@@ -1671,13 +1673,6 @@ function atualizar(local, b) {
   }
   for (const c of local.criancas) { c.rebanhoId ??= 'r1'; c.turma ??= local.rebanhos.find((r) => r.id === c.rebanhoId)?.turma ?? ''; }
   for (const x of local.pessoas) if (x.papel === 'lider_turma') { x.papel = 'lider_secao'; delete x.turma; }
-  // Perfil "Membro da equipe" saiu: vira líder de setor e responde ao líder geral
-  for (const x of local.pessoas) {
-    if (x.papel !== 'membro_setor') continue;
-    const sup = local.pessoas.find((y) => y.id === x.superiorId);
-    x.papel = 'lider_secao';
-    if (sup?.papel === 'lider_secao') x.superiorId = sup.superiorId ?? null;
-  }
   for (const e of local.encontros) e.tipo ??= 'aula';
   if (local.professor) {
     const pe = local.pessoas.find((p) => p.id === 'pe1');
