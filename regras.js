@@ -148,6 +148,25 @@ export function frequenciaPorMes(db, criancas, campo) {
   return Object.entries(meses).sort().map(([mes, m]) => ({ mes, ...m, pct: m.presencas / m.total }));
 }
 
+// Por mês, no formato de frequenciaPorMes: meditações completas ÷ lançadas ('m')
+// ou versículos decorados ÷ máximo das semanas lançadas ('v').
+export function entregasPorMes(db, criancas, tipo) {
+  const dataDe = Object.fromEntries(db.encontros.map((e) => [e.id, e.data]));
+  const meses = {};
+  for (const c of criancas) {
+    for (const [id, r] of Object.entries(db.registros[c.id] || {})) {
+      if (!dataDe[id]) continue;
+      const [ok, total] = tipo === 'm' ? (r.m ? [MEDITACAO_COMPLETA.includes(r.m) ? 1 : 0, 1] : [0, 0])
+        : [r.v || 0, Number(db.versiculoMax[id]) || 0];
+      if (!total) continue;
+      const m = (meses[dataDe[id].slice(0, 7)] ??= { presencas: 0, total: 0 });
+      m.presencas += ok;
+      m.total += total;
+    }
+  }
+  return Object.entries(meses).sort().map(([mes, m]) => ({ mes, ...m, pct: m.presencas / m.total }));
+}
+
 // Sinais de alerta: frequência no Kids abaixo de 75% (com 4+ lançamentos) ou 3 últimas faltas seguidas.
 export function motivosAtencao(db, crianca) {
   const regs = db.registros[crianca.id] || {};

@@ -26,7 +26,8 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Turmas 1 a 4 (A, B, C); seções 08:00–10:00, 10:30–12:30, 15:30–17:30, 18:30–20:30.
 - Em cada seção, cada turma (1A a 4C) tem os rebanhos Azul, Verde, Amarelo e Vermelho: 192 rebanhos (o 2A Verde da planilha está na 2ª seção).
 - Setores: História Bíblica, Revisão e Retenção, Momento Alegria, Bíblia Intelecto, Professores de Rebanho e Recepção (novos setores na aba Equipe).
-- Painel: frequência por mês, aniversariantes, crianças que precisam de atenção (Kids < 75% ou 3 faltas seguidas), ranking de versículos.
+- Painel: seletores Kids/Infantil, seção e rebanho no topo, logo seguidos dos cards; gráficos por mês de frequência
+  (Kids e culto) e de entregas (meditações completas e versículos decorados do máximo); aniversariantes, crianças que precisam de atenção (Kids < 75% ou 3 faltas seguidas), ranking de versículos.
 - **Cronograma** (pastores): datas do ano, tema, versículo e pontos, meditação, desafios e premiação.
   Uma coluna por sala (História: tema; Revisão e Momento Alegria: atividade; Bíblia Intelecto: sala normal ou
   sala crânio), preenchida pelos líderes em "Meu setor", com filtro por seção. Pastor e coordenador geral
@@ -52,8 +53,9 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Gabaritos iniciais transcritos das fotos de 09/11/2026 em `tools/gabaritos_fotos.json` (o importador os inclui em `dados.json`).
 - **Cadastro inicial**: link no login para novos membros; a liderança define função, setor e subordinação na aba Equipe.
 - **Login** por perfil (sem senha nesta versão de teste; senha e segurança reais vêm com o Supabase).
-- **Panorama**: pastor (coordenadores gerais, líderes gerais, coordenadoras de rebanho, líderes de setor),
-  coordenador geral (coordenadoras, e só rebanhos e crianças das coordenadoras subordinadas), líder geral (líderes de setor).
+- Aba Panorama removida. O pastor tem em Equipes e Setores o dashboard da equipe (total por função e tabela por setor
+  com funções e seções). Coordenador geral vê só rebanhos e crianças das coordenadoras subordinadas.
+- Infantil: rebanho com `programa: 'infantil'` (sem o campo = Kids). Setores, atividades e alunos do Infantil serão cadastrados depois.
 - Cadastros: coordenador geral → coordenadoras de rebanho (seção, turma e cor opcionais); professor → professores
   (seção, turma e cor obrigatórias: o nome aparece direto na aba Rebanhos);
   líder geral → líderes de setor.

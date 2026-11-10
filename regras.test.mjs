@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { aniversariantes, avaliarDesafio, descendentes, frequenciaPorMes, motivosAtencao, mediaNotas, mediaTurma, rebanhosVisiveis, resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio } from './regras.js';
+import { aniversariantes, avaliarDesafio, descendentes, entregasPorMes, frequenciaPorMes, motivosAtencao, mediaNotas, mediaTurma, rebanhosVisiveis, resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio } from './regras.js';
 
 const db = JSON.parse(readFileSync(new URL('./data/dados.json', import.meta.url), 'utf-8'));
 const porNome = (n) => db.criancas.find((c) => c.nome.startsWith(n));
@@ -10,6 +10,13 @@ const ganhadores = (id) => {
   const d = db.desafios.find((x) => x.id === id);
   return db.criancas.filter((c) => avaliarDesafio(db, d, c).status === 'top').map((c) => c.nome.split(' ')[0]);
 };
+
+test('gráficos de meditação e versículos somam o resumo da criança', () => {
+  const ana = porNome('ANA');
+  const soma = (t) => entregasPorMes(db, [ana], t).reduce((s, m) => s + m.presencas, 0);
+  assert.equal(soma('m'), 27);
+  assert.equal(soma('v'), 99);
+});
 
 test('totais batem com o RESUMO da planilha', () => {
   const ana = resumoCrianca(db.registros[porNome('ANA').id]);

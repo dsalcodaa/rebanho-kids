@@ -151,3 +151,5 @@ label.check { display: flex; align-items: center; gap: .5rem; }
 .q:disabled { cursor: default; }
 input.nota { width: 5rem; }
 .tabela.cronograma .sala { min-width: 130px; background: #f6faf8; }
+
+.filtros { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1rem; }

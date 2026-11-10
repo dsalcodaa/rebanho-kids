@@ -1,5 +1,5 @@
 import {
-  SUPERIOR, aniversariantes, avaliarDesafio, descendentes, encontrosRealizados, frequenciaPorMes, mediaNotas, mediaTurma,
+  SUPERIOR, aniversariantes, entregasPorMes, avaliarDesafio, descendentes, encontrosRealizados, frequenciaPorMes, mediaNotas, mediaTurma,
   motivosAtencao, parecerBI, rebanhosVisiveis, resumoGabaritos,
   resumoCrianca, semanasDoDesafio, topsDaCrianca, versiculosDoDesafio,
 } from './regras.js';
@@ -98,7 +98,6 @@ const lancaPresenca = () => lancaTudo() || ehRecepcao();
 // Abas do menu: lista de perfis ou função que decide.
 const ABAS = [
   ['', 'Painel', ENSINO],
-  ['panorama', 'Panorama', ['admin', 'pastor', 'coord_geral', 'lider_geral', 'lider_secao']],
   ['setor', 'Meu setor', LIDERES],
   ['recepcao', 'Recepção', () => ehRecepcao()],
   ['cronograma', 'Cronograma', ENSINO],
@@ -258,13 +257,20 @@ function graficoMeses(titulo, dados) {
   return `<div class="card"><strong>${titulo}</strong>
     <div class="barras" role="img" aria-label="${titulo}: ${dados.map((m) => `${MESES[+m.mes.slice(5) - 1]} ${pct(m.pct)}`).join(', ')}">
       ${dados.map((m) => `<div class="barra" title="${m.presencas} de ${m.total}">
-        <span class="valor">${pct(m.pct)}</span><span class="trilho"><span class="col" style="height:${Math.round(m.pct * 100)}%"></span></span>
+        <span class="valor">${pct(m.pct)}</span><span class="trilho"><span class="col" style="height:${Math.min(100, Math.round(m.pct * 100))}%"></span></span>
         <span class="mes">${MESES[+m.mes.slice(5) - 1]}</span></div>`).join('')}
     </div></div>`;
 }
+// Kids ou Infantil: rebanhos sem o campo são do Kids.
+const PROGRAMAS = [['kids', 'Kids'], ['infantil', 'Infantil']];
+const programaDe = (r) => r.programa ?? 'kids';
+
 function painel(rid) {
-  const visiveis = meusAtivos();
-  const escopo = rid ? visiveis.filter((r) => r.id === rid) : visiveis;
+  const prog = sessionStorage.getItem('painelPrograma') || 'kids';
+  const doProg = meusAtivos().filter((r) => programaDe(r) === prog);
+  const sid = db.secoes.some((s) => s.id === sessionStorage.getItem('painelSecao')) ? sessionStorage.getItem('painelSecao') : '';
+  const visiveis = doProg.filter((r) => !sid || r.secaoId === sid);
+  const escopo = visiveis.some((r) => r.id === rid) ? visiveis.filter((r) => r.id === rid) : visiveis;
   const ids = new Set(escopo.map((r) => r.id));
   const todas = minhasCriancas().filter((c) => ids.has(c.rebanhoId));
   const ativas = todas.filter((c) => c.ativa);
@@ -278,19 +284,16 @@ function painel(rid) {
   }));
   const premiados = linhas.filter((l) => l.tops.length >= db.topsPremiacao);
   const varios = escopo.length > 1;
-  const um = escopo.length === 1 ? escopo[0] : null;
   const lancados = (e) => ativas.some((c) => Object.keys(db.registros[c.id]?.[e.id] || {}).length);
   const semLanc = ordenados().filter((e) => e.tipo !== 'sem_aula' && e.data < hoje() && ativas.length && !lancados(e));
-  const sec = um && secao(um.secaoId);
 
   app.innerHTML = `
-    ${visiveis.length > 1 ? `<label class="perfil" style="margin-bottom:.5rem">Rebanho
-      <select id="filtro">${opcoes(visiveis.map((r) => [r.id, nomeRebanho(r)]), rid, 'Todos os rebanhos')}</select></label>` : ''}
-    <h1>${um ? `${bolinha(um)}Kids ${esc(nomeRebanho(um))}` : esc(db.ministerio)}</h1>
-    ${um ? `<p class="sub">${um.professores.map((id) => { const p = pessoa(id);
-      return `Professor: <strong>${esc(p?.nome)}</strong>${p?.nascimento ? ` · ${idade(p.nascimento)} anos · nascido em ${fmt(p.nascimento)}` : ''}`; }).join('<br>') || 'Sem professor'}
-      <br>${sec ? `${esc(sec.nome)} (${esc(sec.horario)})` : 'Seção a definir'} · Coordenador: ${esc(nomePessoa(um.coordenadorId))}</p>` : ''}
-    ${!escopo.length ? '<p class="info">Nenhum rebanho vinculado a este perfil.</p>' : ''}
+    <div class="filtros">
+      <label class="perfil">Programação <select id="fPrograma">${opcoes(PROGRAMAS, prog)}</select></label>
+      <label class="perfil">Seção <select id="fSecao">${opcoes(db.secoes.map((s) => [s.id, `${s.nome} (${s.horario})`]), sid, 'Todas as seções')}</select></label>
+      ${visiveis.length > 1 ? `<label class="perfil">Rebanho <select id="filtro">${opcoes(visiveis.map((r) => [r.id, nomeRebanho(r)]), escopo.length === 1 ? escopo[0].id : '', 'Todos os rebanhos')}</select></label>` : ''}
+    </div>
+    ${!escopo.length ? `<p class="info">${prog === 'infantil' && !doProg.length ? 'Nenhum rebanho do Infantil cadastrado ainda.' : sid ? 'Nenhum rebanho nesta seção.' : 'Nenhum rebanho vinculado a este perfil.'}</p>` : ''}
     <div class="cards">
       <div class="card"><div class="num">${ativas.length}</div><div class="rot">crianças ativas</div></div>
       <div class="card"><div class="num">${inativas.length}</div><div class="rot">crianças inativas</div></div>
@@ -301,7 +304,9 @@ function painel(rid) {
     </div>
 
     <h2>Frequência por mês</h2>
-    <div class="duas">${graficoMeses('Kids', frequenciaPorMes(db, ativas, 'k'))}${graficoMeses('Culto', frequenciaPorMes(db, ativas, 'c'))}</div>
+    <div class="duas">${graficoMeses(prog === 'infantil' ? 'Infantil' : 'Kids', frequenciaPorMes(db, ativas, 'k'))}${graficoMeses('Culto', frequenciaPorMes(db, ativas, 'c'))}</div>
+    <h2>Entregas por mês</h2>
+    <div class="duas">${graficoMeses('Meditações completas', entregasPorMes(db, ativas, 'm'))}${graficoMeses('Versículos decorados (do máximo)', entregasPorMes(db, ativas, 'v'))}</div>
 
     <div class="duas">
       <div><h2>Aniversariantes de ${MESES[new Date().getMonth()]}</h2>
@@ -367,113 +372,15 @@ function painel(rid) {
       ${semLanc.map((e) => `<li>Encontro de ${lancaTudo() ? `<a href="#/encontro/${e.id}">${fmt(e.data)}</a>` : fmt(e.data)} sem lançamento</li>`).join('')}
       ${db.alertas.map((a) => `<li>${esc(a)}</li>`).join('')}
     </ul>`;
+  const ir = (h) => (location.hash === h ? rotear() : (location.hash = h));
   const f = document.getElementById('filtro');
-  if (f) f.onchange = () => { location.hash = f.value ? `#/painel/${f.value}` : '#/'; };
+  if (f) f.onchange = () => ir(f.value ? `#/painel/${f.value}` : '#/');
+  document.getElementById('fPrograma').onchange = (ev) => { sessionStorage.setItem('painelPrograma', ev.target.value); sessionStorage.removeItem('painelSecao'); ir('#/'); };
+  document.getElementById('fSecao').onchange = (ev) => { sessionStorage.setItem('painelSecao', ev.target.value); ir('#/'); };
 }
 
-// ---------- Panorama (pastores, coordenadores gerais e líderes gerais) ----------
-// Números de um conjunto de rebanhos: crianças ativas, frequência no Kids, média das provas e premiadas.
-function numerosRebanhos(rs) {
-  const ids = new Set(rs.map((r) => r.id));
-  const cs = db.criancas.filter((c) => c.ativa && ids.has(c.rebanhoId));
-  const f = cs.map((c) => resumoCrianca(db.registros[c.id] || {}).kids.pct).filter((x) => x != null);
-  return {
-    criancas: cs.length,
-    kids: f.length ? f.reduce((a, b) => a + b, 0) / f.length : null,
-    provas: mediaTurma(db, cs),
-    premiadas: cs.filter((c) => topsDaCrianca(db, c).length >= db.topsPremiacao).length,
-  };
-}
-
-const filhos = (p, papelFilho) => db.pessoas.filter((x) => x.superiorId === p.id && (!papelFilho || x.papel === papelFilho));
-const nomes = (ps) => esc(ps.map((x) => x.nome).join(', ') || '—');
 const vazioLinha = (n, txt) => `<tr><td colspan="${n}" class="vazio">${txt}</td></tr>`;
 
-function tabelaCoordGerais(ps) {
-  return `<div class="rolar"><table class="tabela">
-    <tr><th>Coordenador geral</th><th>Coordenadoras de rebanho</th><th>Rebanhos</th><th>Crianças</th><th>Kids</th><th>Média provas</th><th>Premiadas</th></tr>
-    ${ps.map((p) => { const rs = rebanhosVisiveis(db, p), n = numerosRebanhos(rs);
-      return `<tr><td><strong>${esc(p.nome)}</strong></td><td>${nomes(filhos(p, 'coord_rebanho'))}</td><td>${rs.length}</td>
-        <td>${n.criancas}</td><td>${pct(n.kids)}</td><td>${nota(n.provas)}</td><td>${n.premiadas}</td></tr>`; }).join('') || vazioLinha(7, 'Nenhum coordenador geral cadastrado.')}
-  </table></div>`;
-}
-
-function tabelaCoordRebanho(ps) {
-  return `<div class="rolar"><table class="tabela">
-    <tr><th>Coordenadora de rebanho</th><th>Coordenador geral</th><th>Rebanhos</th><th>Professores</th><th>Crianças</th><th>Kids</th><th>Premiadas</th></tr>
-    ${ps.map((p) => { const rs = rebanhosVisiveis(db, p).sort(ordemRebanho), n = numerosRebanhos(rs);
-      return `<tr><td><strong>${esc(p.nome)}</strong></td><td>${esc(nomePessoa(p.superiorId))}</td>
-        <td>${rs.filter(emUso).map((r) => `${bolinha(r)}<a href="#/painel/${r.id}">${esc(nomeRebanho(r))}</a>`).join('<br>') || '—'}
-          ${rs.length ? `<br><span class="vazio">${rs.length} rebanho(s) sob sua coordenação</span>` : ''}</td>
-        <td>${nomes(filhos(p, 'professor'))}</td><td>${n.criancas}</td><td>${pct(n.kids)}</td><td>${n.premiadas}</td></tr>`; }).join('') || vazioLinha(7, 'Nenhuma coordenadora de rebanho cadastrada.')}
-  </table></div>`;
-}
-
-function tabelaLideresGerais(ps) {
-  return `<div class="rolar"><table class="tabela">
-    <tr><th>Líder geral</th><th>Setor</th><th>Líderes de setor</th></tr>
-    ${ps.map((p) => `<tr><td><strong>${esc(p.nome)}</strong></td><td>${esc(setoresDe(p).join(', ') || '—')}</td><td>${nomes(filhos(p, 'lider_secao'))}</td></tr>`).join('') || vazioLinha(3, 'Nenhum líder geral cadastrado.')}
-  </table></div>`;
-}
-
-function tabelaLideresSecao(ps) {
-  return `<div class="rolar"><table class="tabela">
-    <tr><th>Líder de setor</th><th>Seção</th><th>Setor</th><th>Líder geral</th><th>Telefone</th></tr>
-    ${ps.map((p) => `<tr><td><strong>${esc(p.nome)}</strong></td>
-      <td>${esc(secoesDe(p).map((id) => secao(id)?.nome).join(', ') || '—')}</td>
-      <td>${esc(setoresDe(p).join(', ') || '—')}</td><td>${esc(nomePessoa(p.superiorId))}</td>
-      <td>${esc(p.telefone || '—')}</td></tr>`).join('') || vazioLinha(5, 'Nenhum líder de setor cadastrado.')}
-  </table></div>`;
-}
-
-function tabelaRebanhos(rs) {
-  return `<div class="rolar"><table class="tabela">
-    <tr><th>Rebanho</th><th>Coordenadora</th><th>Professores</th><th>Crianças</th><th>Kids</th><th>Média provas</th><th>Premiadas</th></tr>
-    ${rs.map((r) => { const n = numerosRebanhos([r]);
-      return `<tr><td>${bolinha(r)}<a href="#/painel/${r.id}">${esc(nomeRebanho(r))}</a></td><td>${esc(nomePessoa(r.coordenadorId))}</td>
-        <td>${esc(r.professores.map(nomePessoa).join(', ') || '—')}</td><td>${n.criancas}</td><td>${pct(n.kids)}</td>
-        <td>${nota(n.provas)}</td><td>${n.premiadas}</td></tr>`; }).join('') || vazioLinha(7, 'Nenhum rebanho.')}
-  </table></div>`;
-}
-
-function panorama() {
-  const vis = equipeVisivel();
-  const de = (k) => vis.filter((p) => p.papel === k);
-  const total = numerosRebanhos(meusRebanhos());
-  const cards = (itens) => `<div class="cards">${itens.map(([n, t]) => `<div class="card"><div class="num">${n}</div><div class="rot">${t}</div></div>`).join('')}</div>`;
-  let html;
-  if (['admin', 'pastor'].includes(papel())) {
-    html = `
-      <h1>Panorama do ministério</h1>
-      <p class="sub">Desempenho dos rebanhos e crianças: aba <a href="#/">Painel</a>.</p>
-      ${cards([[de('coord_geral').length, 'coordenadores gerais'], [de('coord_rebanho').length, 'coordenadoras de rebanho'],
-        [de('professor').length, 'professores'], [de('lider_geral').length, 'líderes gerais'], [de('lider_secao').length, 'líderes de setor'], [de('membro_setor').length, 'membros de equipe'],
-        [total.criancas, 'crianças ativas'], [pct(total.kids), 'frequência média no Kids']])}
-      <h2>Líderes e coordenadores gerais</h2>
-      ${tabelaCoordGerais(de('coord_geral'))}
-      <div style="margin-top:.75rem">${tabelaLideresGerais(de('lider_geral'))}</div>
-      <h2>Coordenadores de rebanho e líderes de setor</h2>
-      ${tabelaCoordRebanho(de('coord_rebanho'))}
-      <div style="margin-top:.75rem">${tabelaLideresSecao(de('lider_secao'))}</div>`;
-  } else if (papel() === 'coord_geral') {
-    html = `
-      <h1>Panorama — ${esc(eu().nome)}</h1>
-      ${cards([[de('coord_rebanho').length, 'coordenadoras de rebanho'], [meusAtivos().length, 'rebanhos em uso'],
-        [total.criancas, 'crianças ativas'], [pct(total.kids), 'frequência média no Kids'], [nota(total.provas), 'média das provas'], [total.premiadas, 'premiadas']])}
-      <h2>Coordenadoras de rebanho</h2>
-      ${tabelaCoordRebanho(de('coord_rebanho'))}
-      <h2>Rebanhos e crianças</h2>
-      ${tabelaRebanhos(meusAtivos())}`;
-  } else {
-    const lideres = de('lider_secao');
-    html = `
-      <h1>Panorama — ${esc(eu().nome)}</h1>
-      ${cards([[lideres.length, 'líderes de setor'], [new Set(lideres.flatMap(setoresDe)).size, 'setores atendidos']])}
-      <h2>Líderes de setor</h2>
-      ${tabelaLideresSecao(de('lider_secao'))}`;
-  }
-  app.innerHTML = html;
-}
 
 // ---------- Cronograma (pastores) ----------
 const desafiosDaData = (e) => db.desafios.filter((d) => semanasDoDesafio(db, d).some((x) => x.id === e.id));
@@ -772,9 +679,30 @@ function equipe() {
   const novoForm = ['professor', 'coord_rebanho'].includes(papel())
     ? { atuacoes: atuacoes(eu()).filter((a) => a.secaoId).map((a) => ({ ...a, setor: SETOR_PROFESSOR })) } : {};
 
+  // Dashboard do pastor: quantidade da equipe por função, setor e seção.
+  const dash = () => {
+    const conta = (ps) => ps.length;
+    const PAP = ['lider_geral', 'lider_secao', 'membro_setor', 'professor'];
+    const noSetor = (st) => todos.filter((p) => setoresDe(p).includes(st.nome));
+    const naSecao = (st, s) => todos.filter((p) => atuacoes(p).some((a) => a.setor === st.nome && a.secaoId === s.id));
+    return `<div class="cards">${Object.entries(PAPEIS).map(([k, t]) => `<div class="card"><div class="num">${conta(todos.filter((p) => p.papel === k))}</div><div class="rot">${t}</div></div>`).join('')}
+      <div class="card"><div class="num">${todos.length}</div><div class="rot">equipe total</div></div></div>
+    <h2>Equipe por setor</h2>
+    <div class="rolar"><table class="tabela">
+      <tr><th>Setor</th>${PAP.map((k) => `<th>${PAPEIS[k]}</th>`).join('')}<th>Total</th>${db.secoes.map((s) => `<th>${esc(s.nome)}</th>`).join('')}</tr>
+      ${db.setores.map((st) => `<tr><td><strong>${esc(st.nome)}</strong></td>
+        ${PAP.map((k) => `<td>${conta(noSetor(st).filter((p) => p.papel === k))}</td>`).join('')}
+        <td><strong>${conta(noSetor(st))}</strong></td>${db.secoes.map((s) => `<td>${conta(naSecao(st, s))}</td>`).join('')}</tr>`).join('')}
+      <tr><td><strong>Sem setor</strong></td>${PAP.map((k) => `<td>${conta(todos.filter((p) => p.papel === k && !setoresDe(p).length))}</td>`).join('')}
+        <td><strong>${conta(todos.filter((p) => !setoresDe(p).length))}</strong></td>${db.secoes.map(() => '<td></td>').join('')}</tr>
+    </table></div>
+    <p class="vazio pequeno">Quem atua em mais de um setor ou seção conta em cada um.</p>`;
+  };
+
   app.innerHTML = `
     <h1>Equipes e Setores</h1>
     <p class="sub">${esc(db.ministerio)}</p>
+    ${['admin', 'pastor'].includes(papel()) ? `<h2>Dashboard da equipe</h2>${dash()}` : ''}
     ${novos.length ? `<h2>Novos membros aguardando definição</h2>
     <div class="rolar"><table class="tabela">
       <tr><th>Nome</th><th>Idade</th><th>Telefone</th><th>E-mail</th><th>Setor de interesse</th><th>Cadastro em</th><th></th></tr>
@@ -1631,7 +1559,7 @@ function dados() {
 
 // ---------- Rotas ----------
 const rotas = {
-  '': painel, painel, panorama, setor: meuSetor, recepcao, presenca, cronograma, data: dataCronograma, equipe, pessoa: pessoaPagina,
+  '': painel, painel, setor: meuSetor, recepcao, presenca, cronograma, data: dataCronograma, equipe, pessoa: pessoaPagina,
   rebanhos, rebanho: rebanhoPagina, encontros, encontro, intelecto, gabarito: gabaritoPagina, provas,
   criancas, crianca, desafios, desafio, dados,
 };
