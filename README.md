@@ -21,7 +21,7 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 
 ## Organograma e abas
 - Ensino: Pastores → Coordenadores gerais → Coordenadores de rebanho → Professores → Crianças.
-- Setores: Pastores → Líderes gerais → Líderes de seção → Membros da equipe.
+- Setores: Pastores → Líderes gerais → Líderes de setor (o perfil Membro da equipe saiu).
 - Turmas 1 a 4 (A, B, C); seções 08:00–10:00, 10:30–12:30, 15:30–17:30, 18:30–20:30.
 - Em cada seção, cada turma (1A a 4C) tem os rebanhos Azul, Verde, Amarelo e Vermelho: 192 rebanhos (o 2A Verde da planilha está na 2ª seção).
 - Setores: História Bíblica, Revisão e Retenção, Momento Alegria, Bíblia Intelecto, Professores de Rebanho e Recepção (novos setores na aba Equipe).
@@ -37,8 +37,8 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - **Lançamentos**: só professores de rebanho (presença, culto, versículo, meditação e notas).
 - **Recepção** (perfil próprio no login; quem está no setor Recepção): cadastra crianças e marca presença/faltas dos rebanhos da sua seção.
   Só a Recepção (e o administrador) cadastra e edita crianças.
-- **Meu setor** (líderes e membros): programação própria do setor (data, seção e tema, cadastrados pelos líderes) e equipe.
-  Líderes e membros não têm a aba Cronograma.
+- **Meu setor** (líderes): programação própria do setor (data, seção e tema, cadastrados pelos líderes) e equipe.
+  Líderes não têm a aba Cronograma.
 - Login: "Pastor (acesso total)" é o antigo Administrador.
 - **Bíblia Intelecto** (perfil próprio no login; quem está no setor Bíblia Intelecto): 13 livros; cada exercício tem 8 questões.
   Gabarito por questão: ✓ acerto de primeira, ✗ errou, ↺ errou e corrigiu (bola vermelha com risco), · em branco.
@@ -48,11 +48,11 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Gabaritos iniciais transcritos das fotos de 09/11/2026 em `tools/gabaritos_fotos.json` (o importador os inclui em `dados.json`).
 - **Cadastro inicial**: link no login para novos membros; a liderança define função, setor e subordinação na aba Equipe.
 - **Login** por perfil (sem senha nesta versão de teste; senha e segurança reais vêm com o Supabase).
-- **Panorama**: pastor (coordenadores gerais, líderes gerais, coordenadoras de rebanho, líderes de seção),
-  coordenador geral (coordenadoras, rebanhos e crianças), líder geral (líderes de seção e equipe).
+- **Panorama**: pastor (coordenadores gerais, líderes gerais, coordenadoras de rebanho, líderes de setor),
+  coordenador geral (coordenadoras, rebanhos e crianças), líder geral (líderes de setor).
 - Cadastros: coordenador geral → coordenadoras de rebanho (seção, turma e cor opcionais); professor → professores
   (seção, turma e cor obrigatórias: o nome aparece direto na aba Rebanhos);
-  líder geral → líderes de seção e membros.
+  líder geral → líderes de setor.
 - Cadastro de alunos: nome, aniversário (idade calculada), responsável, seção, cor do rebanho e turma.
 - "Pontos" agora se chamam "versículos decorados".
 

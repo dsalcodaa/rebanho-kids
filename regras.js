@@ -105,7 +105,6 @@ export const SUPERIOR = {
   professor: 'coord_rebanho',
   lider_geral: 'pastor',
   lider_secao: 'lider_geral',
-  membro_setor: 'lider_secao',
 };
 
 export function descendentes(db, id) {
