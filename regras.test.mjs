@@ -88,7 +88,7 @@ test('organograma: cada um vê só os rebanhos da sua equipe', () => {
   const ver = (id) => rebanhosVisiveis(org, org.pessoas.find((p) => p.id === id)).map((r) => r.id);
   assert.deepEqual([...descendentes(org, 'cg')].sort(), ['cr', 'pr', 'pr2']);
   assert.deepEqual(ver('pa'), ['r1', 'r2', 'r3']);
-  assert.deepEqual(ver('cg'), ['r1', 'r2']);
+  assert.deepEqual(ver('cg'), ['r1']); // r2 não tem coordenadora da equipe
   assert.deepEqual(ver('cr'), ['r1', 'r2']);
   assert.deepEqual(ver('pr'), ['r1']);
   assert.deepEqual(ver('lg'), []);

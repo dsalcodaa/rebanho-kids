@@ -123,7 +123,8 @@ export function rebanhosVisiveis(db, pessoa) {
   const sub = descendentes(db, pessoa.id);
   const daEquipe = (r) => sub.has(r.coordenadorId) || r.professores.some((x) => sub.has(x));
   switch (pessoa.papel) {
-    case 'coord_geral': return db.rebanhos.filter(daEquipe);
+    // Coordenador geral: só os rebanhos das coordenadoras de rebanho subordinadas a ele.
+    case 'coord_geral': return db.rebanhos.filter((r) => sub.has(r.coordenadorId));
     case 'coord_rebanho': return db.rebanhos.filter((r) => r.coordenadorId === pessoa.id || daEquipe(r));
     case 'professor': return db.rebanhos.filter((r) => r.professores.includes(pessoa.id));
     default: return [];

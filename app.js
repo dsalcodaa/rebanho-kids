@@ -483,37 +483,49 @@ function formCronograma(e) {
     <label>Tema da aula <input name="tema" value="${esc(e.tema)}"></label>
     <label>Versículo (referência) <input name="versiculo" value="${esc(e.versiculo)}" placeholder="Ex.: João 3:16"></label>
     <label>Versículos decorados (máximo) <input type="number" name="pontos" min="0" step="0.5" value="${e.id != null ? db.versiculoMax[e.id] ?? '' : ''}"></label>
-    <label>Meditação <input name="meditacao" value="${esc(e.meditacao)}"></label>
-    ${db.setores.map((st) => `<label>${esc(st.nome)} <input name="setor_${st.id}" value="${esc(e.setores?.[st.id])}"></label>`).join('')}`;
+    <label>Meditação <input name="meditacao" value="${esc(e.meditacao)}"></label>`;
 }
 
-// Programação de cada setor numa data, em linhas "Setor: conteúdo"
-const programaSetores = (e) => db.setores.filter((st) => e.setores?.[st.id])
-  .map((st) => `<strong>${esc(st.nome)}:</strong> ${esc(e.setores[st.id])}`).join('<br>');
+// Salas do dia: setores pelos quais a criança passa (cada um cadastra sua programação em "Meu setor").
+const setoresSala = () => db.setores.filter((st) => ![SETOR_RECEPCAO, SETOR_PROFESSOR].includes(st.nome));
+const CAMPO_SETOR = { 'História Bíblica': 'Tema da história', 'Revisão e Retenção': 'Atividade', 'Momento Alegria': 'Atividade', [SETOR_BI]: 'Sala' };
+const SALAS_BI = ['Sala normal', 'Sala crânio'];
+// Programação do setor na data; sem seção escolhida, mostra a seção de cada item.
+function programaDoSetor(st, e, sid) {
+  const itens = (db.programacoes?.[st.id] || []).filter((x) => x.data === e.data && (!sid || !x.secaoId || x.secaoId === sid));
+  if (!itens.length) return e.setores?.[st.id] ? esc(e.setores[st.id]) : ''; // cadastros antigos feitos pelo pastor
+  return itens.map((x) => `${!sid && x.secaoId ? `<span class="vazio">${esc(secao(x.secaoId)?.nome)}:</span> ` : ''}${esc(x.tema)}`).join('<br>');
+}
+const programaDoDia = (e, sid) => setoresSala().map((st) => [st, programaDoSetor(st, e, sid)]).filter(([, t]) => t)
+  .map(([st, t]) => `<strong>${esc(st.nome)}:</strong> ${t}`).join('<br>');
 
 function lerCronograma(form, e) {
   const d = dadosDoForm(form);
   Object.assign(e, { data: d.data, tipo: d.tipo, tema: d.tema, versiculo: d.versiculo, meditacao: d.meditacao });
-  e.setores = Object.fromEntries(db.setores.map((st) => [st.id, d[`setor_${st.id}`]?.trim()]).filter(([, v]) => v));
   if (d.pontos === '') delete db.versiculoMax[e.id]; else db.versiculoMax[e.id] = Number(d.pontos);
 }
 
-function cronograma() {
+function cronograma(sid) {
   const pode = editaCronograma();
+  const salas = setoresSala();
   let n = 0;
   app.innerHTML = `
     <h1>Cronograma do ano</h1>
-    <p class="info">Definido pelos pastores e válido para todos os rebanhos. Datas, versículos, meditações e desafios
-      cadastrados aqui aparecem direto na tela de lançamentos dos professores.</p>
+    <p class="info">Datas, versículos, meditações e desafios são definidos pelos pastores e aparecem nos lançamentos dos professores.
+      As colunas de cada sala (${esc(salas.map((st) => st.nome).join(', '))}) vêm do que cada setor cadastra em "Meu setor".</p>
     <h2>Seções</h2>
     <div class="cards">${db.secoes.map((s) => `<div class="card"><div class="num" style="font-size:1.1rem">${esc(s.nome)}</div><div class="rot">${esc(s.horario)}</div></div>`).join('')}</div>
     <h2>Programação</h2>
-    <div class="rolar"><table class="tabela">
-      <tr><th>Nº</th><th>Data</th><th>Tipo</th><th>Tema</th><th>Versículo</th><th>Versículos decorados</th><th>Meditação</th><th>Setores</th><th>Desafio</th>${pode ? '<th></th>' : ''}</tr>
+    <div class="acoes"><a class="btn ${sid ? 'sec' : ''}" href="#/cronograma">Todas as seções</a>
+      ${db.secoes.map((s) => `<a class="btn ${s.id === sid ? '' : 'sec'}" href="#/cronograma/${s.id}">${esc(s.nome)}</a>`).join('')}</div>
+    <div class="rolar"><table class="tabela cronograma">
+      <tr><th>Nº</th><th>Data</th><th>Tipo</th><th>Tema</th><th>Versículo</th><th>Versículos decorados</th><th>Meditação</th>
+        ${salas.map((st) => `<th class="sala">${esc(st.nome)}<br><span class="vazio">${esc(CAMPO_SETOR[st.nome] ?? 'Programação')}</span></th>`).join('')}
+        <th>Desafio</th>${pode ? '<th></th>' : ''}</tr>
       ${ordenados().map((e) => `<tr><td>${e.tipo === 'sem_aula' ? '' : ++n}</td><td>${fmt(e.data)}</td>
         <td>${e.tipo === 'sem_aula' ? '<span class="tag fora">Sem programação</span>' : 'Kids'}</td>
         <td>${esc(e.tema || '—')}</td><td>${esc(e.versiculo || '—')}</td><td>${db.versiculoMax[e.id] ?? '—'}</td>
-        <td>${esc(e.meditacao || '—')}</td><td>${programaSetores(e) || '—'}</td><td>${esc(desafiosDaData(e).map((d) => d.nome).join(', ') || '—')}</td>
+        <td>${esc(e.meditacao || '—')}</td>${salas.map((st) => `<td class="sala">${e.tipo === 'sem_aula' ? '' : programaDoSetor(st, e, sid) || '—'}</td>`).join('')}<td>${esc(desafiosDaData(e).map((d) => d.nome).join(', ') || '—')}</td>
         ${pode ? `<td><a class="btn sec" href="#/data/${e.id}">Editar</a></td>` : ''}</tr>`).join('')}
     </table></div>
     ${pode ? `<h2>Nova data</h2>
@@ -964,6 +976,9 @@ function meuSetor(sid) {
   const gente = db.pessoas.filter((x) => LIDERES.includes(x.papel) && setoresDe(x).includes(st.nome))
     .sort((a, b) => LIDERES.indexOf(a.papel) - LIDERES.indexOf(b.papel) || a.nome.localeCompare(b.nome));
   const prog = [...(db.programacoes?.[st.id] || [])].sort((a, b) => a.data.localeCompare(b.data));
+  const campo = CAMPO_SETOR[st.nome] ?? 'Tema';
+  const datas = ordenados().filter((e) => e.tipo !== 'sem_aula');
+  const proxima = datas.find((e) => e.data >= hoje());
   app.innerHTML = `
     ${meus.length > 1 ? `<div class="acoes">${meus.map((x) => `<a class="btn ${x === st ? '' : 'sec'}" href="#/setor/${x.id}">${esc(x.nome)}</a>`).join('')}</div>` : ''}
     <h1>${esc(st.nome)}</h1>
@@ -972,14 +987,15 @@ function meuSetor(sid) {
     ${st.nome === SETOR_RECEPCAO ? '<p class="info">Use a aba <a href="#/recepcao">Recepção</a> para cadastrar crianças e marcar presença.</p>' : ''}
     <h2>Programação do setor</h2>
     <div class="rolar"><table class="tabela">
-      <tr><th>Data</th><th>Seção</th><th>Tema</th>${edita ? '<th></th>' : ''}</tr>
+      <tr><th>Data</th><th>Seção</th><th>${esc(campo)}</th>${edita ? '<th></th>' : ''}</tr>
       ${prog.map((x) => `<tr><td>${fmt(x.data)}</td><td>${esc(secao(x.secaoId)?.nome ?? 'Todas')}</td><td>${esc(x.tema)}</td>
-        ${edita ? `<td><button class="btn sec" data-excluir="${x.id}">Excluir</button></td>` : ''}</tr>`).join('') || vazioLinha(edita ? 4 : 3, 'Nenhum tema cadastrado.')}
+        ${edita ? `<td><button class="btn sec" data-excluir="${x.id}">Excluir</button></td>` : ''}</tr>`).join('') || vazioLinha(edita ? 4 : 3, 'Nada cadastrado ainda.')}
     </table></div>
     ${edita ? `<form class="grade" id="novoTema" style="margin-top:.75rem">
-      <label>Data <input type="date" name="data" required></label>
+      <label>Data do cronograma <select name="data" required>${opcoes(datas.map((e) => [e.data, `${fmt(e.data)}${e.tema ? ` · ${e.tema}` : ''}`]), proxima?.data)}</select></label>
       <label>Seção <select name="secaoId">${opcoes(db.secoes.map((x) => [x.id, `${x.nome} (${x.horario})`]), minhas[0], 'Todas as seções')}</select></label>
-      <label>Tema <input name="tema" required></label>
+      ${st.nome === SETOR_BI ? `<label>Sala <select name="tema">${opcoes(SALAS_BI.map((x) => [x, x]))}</select></label>`
+        : `<label>${esc(campo)} <input name="tema" required></label>`}
       <div style="align-self:end"><button class="btn">Adicionar</button></div></form>` : ''}
     <h2>Equipe do setor</h2>
     <div class="rolar"><table class="tabela">
@@ -993,7 +1009,7 @@ function meuSetor(sid) {
     const d = dadosDoForm(ev.target);
     db.programacoes ??= {};
     (db.programacoes[st.id] ??= []).push({ id: `pg${Date.now()}`, data: d.data, secaoId: d.secaoId || null, tema: d.tema.trim() });
-    salvar('Tema cadastrado');
+    salvar(`${campo} cadastrado(a)`);
     meuSetor(st.id);
   };
   app.querySelectorAll('[data-excluir]').forEach((b) => {
@@ -1063,7 +1079,7 @@ function encontro(id, rid, rota = '#/encontro') {
     <div class="info"><strong>Cronograma:</strong> ${esc(e.tema || 'sem tema')}
       · Versículo: ${esc(e.versiculo || '—')} ${vmax != null ? `(até ${vmax} decorados)` : '(quantidade não definida)'}
       · Meditação: ${esc(e.meditacao || '—')}${s ? ` · ${esc(s.nome)} ${esc(s.horario)}` : ''}
-      ${programaSetores(e) ? `<div style="margin-top:.4rem">${programaSetores(e)}</div>` : ''}</div>`;
+      ${programaDoDia(e, r.secaoId) ? `<div style="margin-top:.4rem">${programaDoDia(e, r.secaoId)}</div>` : ''}</div>`;
   if (e.tipo === 'sem_aula') {
     app.innerHTML = `${cab}<p class="vazio">Data marcada no cronograma como sem programação.</p>`;
     return ligarSeletor();
