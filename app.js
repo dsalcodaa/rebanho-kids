@@ -1598,13 +1598,21 @@ function atualizar(local, b) {
   for (const [k, v] of Object.entries(b)) if (!(k in local)) local[k] = structuredClone(v);
   for (const d of b.desafios) if (!local.desafios.some((x) => x.id === d.id)) local.desafios.push(structuredClone(d));
   for (const st of b.setores) if (!local.setores.some((x) => x.nome === st.nome)) local.setores.push(structuredClone(st));
-  // Planilha reimportada: traz crianças e lançamentos novos; o que já foi lançado neste navegador prevalece.
+  // Planilha reimportada, campo a campo: entra o que veio da planilha; o que foi editado neste navegador
+  // (diferente da planilha da última visita, guardada em local.planilha) prevalece.
   for (const c of b.criancas) if (!local.criancas.some((x) => x.id === c.id)) local.criancas.push(structuredClone(c));
+  const antes = local.planilha ?? { registros: {}, versiculoMax: {} };
   for (const [cid, regs] of Object.entries(b.registros)) {
     const meus = (local.registros[cid] ??= {});
-    for (const [eid, r] of Object.entries(regs)) if (!(eid in meus)) meus[eid] = structuredClone(r);
+    for (const [eid, r] of Object.entries(regs)) {
+      const meu = (meus[eid] ??= {}), velho = antes.registros[cid]?.[eid] ?? {};
+      for (const [k, v] of Object.entries(r)) if (meu[k] == null || meu[k] === velho[k]) meu[k] = v;
+    }
   }
-  for (const [eid, v] of Object.entries(b.versiculoMax)) if (local.versiculoMax[eid] == null) local.versiculoMax[eid] = v;
+  for (const [eid, v] of Object.entries(b.versiculoMax)) {
+    if (local.versiculoMax[eid] == null || local.versiculoMax[eid] === antes.versiculoMax[eid]) local.versiculoMax[eid] = v;
+  }
+  local.planilha = structuredClone({ registros: b.registros, versiculoMax: b.versiculoMax });
   // Versão 6: rebanhos por seção × turma × cor; os antigos por seção × cor saem se estiverem vazios.
   const antigo = /^r-s\d-(azul|verde|amarelo|vermelho)$/;
   local.rebanhos = local.rebanhos.filter((r) => !antigo.test(r.id) || r.professores.length || r.coordenadorId
@@ -1632,6 +1640,8 @@ function atualizar(local, b) {
 base = await (await fetch('data/dados.json', { cache: 'no-store' })).json();
 const salvo = localStorage.getItem(CHAVE);
 db = salvo ? atualizar(JSON.parse(salvo), base) : structuredClone(base);
+db.planilha ??= structuredClone({ registros: base.registros, versiculoMax: base.versiculoMax });
+if (salvo) localStorage.setItem(CHAVE, JSON.stringify(db)); // guarda a planilha desta visita para a próxima mesclagem
 if (sessao() && !logado()) localStorage.removeItem(CHAVE_PERFIL);
 montarTopo();
 window.addEventListener('hashchange', rotear);
