@@ -68,7 +68,7 @@ const CADASTRA = {
   pastor: ['coord_geral', 'coord_rebanho', 'professor', 'lider_geral', 'lider_secao', 'membro_setor'],
   coord_geral: ['coord_rebanho'],
   coord_rebanho: ['professor'],
-  professor: ['professor'],
+  professor: [],
   lider_geral: ['lider_secao', 'membro_setor'],
   lider_secao: ['membro_setor'],
 };
@@ -101,7 +101,7 @@ const ABAS = [
   ['setor', 'Meu setor', LIDERES],
   ['recepcao', 'Recepção', () => ehRecepcao()],
   ['cronograma', 'Cronograma', ENSINO],
-  ['equipe', 'Equipes e Setores', TODOS],
+  ['equipe', 'Equipes e Setores', TODOS.filter((k) => k !== 'professor')],
   ['rebanhos', 'Rebanhos', ['admin', 'pastor', 'coord_geral', 'coord_rebanho']],
   ['encontros', 'Lançamentos', lancaTudo],
   ['intelecto', 'Bíblia Intelecto', () => ENSINO.includes(papel()) || ehBI()],

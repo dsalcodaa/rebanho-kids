@@ -58,9 +58,9 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Aba Panorama removida. O pastor tem em Equipes e Setores o dashboard da equipe (total por função e tabela por setor
   com funções e seções). Coordenador geral vê só rebanhos e crianças das coordenadoras subordinadas.
 - Infantil: rebanho com `programa: 'infantil'` (sem o campo = Kids). Setores, atividades e alunos do Infantil serão cadastrados depois.
-- Cadastros: coordenador geral → coordenadoras de rebanho (seção, turma e cor opcionais); professor → professores
+- Cadastros: coordenador geral → coordenadoras de rebanho (seção, turma e cor opcionais); coordenadora de rebanho → professores
   (seção, turma e cor obrigatórias: o nome aparece direto na aba Rebanhos);
-  líder geral → líderes de setor.
+  líder geral → líderes de setor. Professor de rebanho não cadastra ninguém e não tem a aba Equipes e Setores.
 - Cadastro de alunos: nome, aniversário (idade calculada), responsável, seção, cor do rebanho e turma.
 - "Pontos" agora se chamam "versículos decorados".
 
