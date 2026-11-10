@@ -1285,24 +1285,33 @@ function provas(sid) {
 }
 
 // ---------- Crianças ----------
+// Cabeçalho que só aparece no papel, e botão que abre a impressão do navegador.
+const topoImpressao = () => `<p class="so-impressao">${esc(db.ministerio)} · impresso em ${fmt(hoje())}</p>`;
+const botaoImprimir = '<button class="btn sec nao-imprime" onclick="window.print()">Imprimir</button>';
+
 function criancas() {
   const mostrar = sessionStorage.getItem('inativas') === '1';
   const lista = minhasCriancas().filter((c) => mostrar || c.ativa);
+  // Perfil Bíblia Intelecto vê só as notas das provas, sem frequência, versículos e meditação.
+  const soProvas = ehBI();
   app.innerHTML = `
-    <h1>Crianças</h1>
-    <label class="check"><input type="checkbox" id="inativas" ${mostrar ? 'checked' : ''}> Mostrar inativas</label>
+    ${topoImpressao()}
+    <div class="titulo-acoes"><h1>Crianças</h1>${botaoImprimir}</div>
+    <label class="check nao-imprime"><input type="checkbox" id="inativas" ${mostrar ? 'checked' : ''}> Mostrar inativas</label>
     <div class="rolar" style="margin-top:.75rem"><table class="tabela">
-      <tr><th>Nome</th><th>Rebanho</th><th>Idade</th><th>Kids</th><th>Culto</th><th>Versículos</th><th>Meditações</th><th>Média provas</th><th>TOPs</th></tr>
+      <tr><th>Nome</th><th>Rebanho</th><th>Idade</th>${soProvas ? db.provas.map((p) => `<th>${esc(p.nome)}</th>`).join('')
+        : '<th>Kids</th><th>Culto</th><th>Versículos</th><th>Meditações</th>'}<th>Média provas</th>${soProvas ? '' : '<th>TOPs</th>'}</tr>
       ${lista.map((c) => {
         const r = resumoCrianca(db.registros[c.id] || {});
         return `<tr><td><a href="#/crianca/${c.id}">${esc(c.nome)}</a> ${c.ativa ? '' : '<span class="tag fora">inativa</span>'}</td>
           <td>${ondeEsta(c)}</td>
-          <td>${idade(c.nascimento)}</td><td>${pct(r.kids.pct)}</td><td>${pct(r.culto.pct)}</td><td>${r.versiculos}</td>
-          <td>${r.meditacoes.completas}/${r.meditacoes.total}</td><td>${nota(mediaNotas(db.notas[c.id]))}</td><td>${topsDaCrianca(db, c).length}</td></tr>`;
-      }).join('') || '<tr><td colspan="9" class="vazio">Nenhuma criança.</td></tr>'}
+          <td>${idade(c.nascimento)}</td>${soProvas ? db.provas.map((p) => `<td>${nota(db.notas[c.id]?.[p.id])}</td>`).join('')
+            : `<td>${pct(r.kids.pct)}</td><td>${pct(r.culto.pct)}</td><td>${r.versiculos}</td><td>${r.meditacoes.completas}/${r.meditacoes.total}</td>`}
+          <td>${nota(mediaNotas(db.notas[c.id]))}</td>${soProvas ? '' : `<td>${topsDaCrianca(db, c).length}</td>`}</tr>`;
+      }).join('') || '<tr><td colspan="12" class="vazio">Nenhuma criança.</td></tr>'}
     </table></div>
-    ${!cadastraCrianca() ? '<p class="vazio pequeno" style="margin-top:.75rem">O cadastro de crianças é feito pela Recepção.</p>' : ''}
-    ${cadastraCrianca() && meusRebanhos().length ? `<h2>Nova criança</h2>
+    ${!cadastraCrianca() ? '<p class="vazio pequeno nao-imprime" style="margin-top:.75rem">O cadastro de crianças é feito pela Recepção.</p>' : ''}
+    ${cadastraCrianca() && meusRebanhos().length ? `<h2 class="nao-imprime">Nova criança</h2>
     <form class="grade" id="nova">${camposCrianca({ entrada: hoje(), rebanhoId: rebanhoAtual()?.id })}
       <div style="align-self:end"><button class="btn">Cadastrar</button></div></form>` : ''}`;
   document.getElementById('inativas').onchange = (ev) => { sessionStorage.setItem('inativas', ev.target.checked ? '1' : '0'); criancas(); };
@@ -1360,7 +1369,8 @@ function crianca(id) {
   const r = resumoCrianca(regs);
   const feitos = encontrosRealizados(db);
   app.innerHTML = `
-    <h1>${esc(c.nome)} ${c.ativa ? '' : '<span class="tag fora">inativa</span>'}</h1>
+    ${topoImpressao()}
+    <div class="titulo-acoes"><h1>${esc(c.nome)} ${c.ativa ? '' : '<span class="tag fora">inativa</span>'}</h1>${botaoImprimir}</div>
     <p class="sub">${ondeEsta(c)} · ${idade(c.nascimento)} anos${c.nascimento ? ` (${fmt(c.nascimento)})` : ''} · entrada em ${fmt(c.entrada)}${c.ativa ? '' : ` · saída em ${fmt(c.saida)}: ${esc(c.motivoSaida)}`}
       <br>Responsável: ${esc(c.responsavel || '—')}${c.parentesco ? ` (${esc(c.parentesco)})` : ''}${c.telefone ? ` · ${esc(c.telefone)}` : ''}${c.emergencia ? ` · emergência: ${esc(c.emergencia)}` : ''}
       ${c.escola ? `<br>Escola: ${esc(c.escola)}` : ''} · Imagem: ${c.autorizaImagem ? 'autorizada' : 'não autorizada'}</p>
@@ -1375,7 +1385,7 @@ function crianca(id) {
       <div class="card"><div class="num">${nota(mediaNotas(db.notas[c.id]))}</div><div class="rot">média das provas</div></div>
     </div>
 
-    ${lancaBI() ? `<h2>Notas de prova</h2>
+    ${lancaBI() ? `<h2 class="nao-imprime">Notas de prova</h2>
     <form class="grade" id="notas">
       ${db.provas.map((p) => `<label>${esc(p.nome)} (0 a ${db.notaMaxima})
         <input type="number" name="${p.id}" min="0" max="${db.notaMaxima}" step="0.1" value="${db.notas[c.id]?.[p.id] ?? ''}"></label>`).join('')}
@@ -1392,7 +1402,7 @@ function crianca(id) {
     ${(() => { const rb = resumoBI(c.id);
       return `<div class="info">${rb.respondidas ? `<strong>Nota ${nota(rb.nota)}</strong> · acerto de primeira ${pct(rb.taxa)} · ${rb.erros} erro(s), ${rb.corrigidos} corrigido(s), ${rb.pendentes} aguardando correção<br>` : ''}
         ${esc(parecerBI(rb))}${c.obsBI ? `<br><strong>Observação do setor:</strong> ${esc(c.obsBI)}` : ''}
-        <br><a href="#/gabarito/${c.id}">Ver gabaritos e questões mais erradas</a></div>`; })()}
+        <br><a class="nao-imprime" href="#/gabarito/${c.id}">Ver gabaritos e questões mais erradas</a></div>`; })()}
 
     <h2>Histórico</h2>
     <div class="rolar"><table class="tabela"><tr><th>Data</th><th>Kids</th><th>Culto</th><th>Versículos decorados</th><th>Meditação</th></tr>
@@ -1401,12 +1411,12 @@ function crianca(id) {
           <td>${x.v ?? '—'}${db.versiculoMax[e.id] ? `/${db.versiculoMax[e.id]}` : ''}</td><td>${x.m ?? '—'}</td></tr>`; }).join('')}
     </table></div>
 
-    ${cadastraCrianca() ? `<h2>Cadastro</h2>
+    ${cadastraCrianca() ? `<h2 class="nao-imprime">Cadastro</h2>
     <form class="grade" id="editar">${camposCrianca(c)}
       <div style="align-self:end"><button class="btn">Salvar cadastro</button></div></form>
-    <div class="acoes">${c.ativa
+    <div class="acoes nao-imprime">${c.ativa
       ? '<button class="btn perigo" id="inativar">Inativar criança</button>'
-      : '<button class="btn sec" id="reativar">Reativar criança</button>'}</div>` : '<p class="vazio pequeno">Alterações no cadastro: fale com a Recepção.</p>'}`;
+      : '<button class="btn sec" id="reativar">Reativar criança</button>'}</div>` : '<p class="vazio pequeno nao-imprime">Alterações no cadastro: fale com a Recepção.</p>'}`;
 
   const fn = document.getElementById('notas');
   if (fn) fn.onsubmit = (ev) => {

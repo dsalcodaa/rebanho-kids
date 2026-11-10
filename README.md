@@ -26,6 +26,8 @@ Site estático (HTML + JavaScript, sem build) para testar a gestão da turma Kid
 - Turmas 1 a 4 (A, B, C); seções 08:00–10:00, 10:30–12:30, 15:30–17:30, 18:30–20:30.
 - Em cada seção, cada turma (1A a 4C) tem os rebanhos Azul, Verde, Amarelo e Vermelho: 192 rebanhos (o 2A Verde da planilha está na 2ª seção).
 - Setores: História Bíblica, Revisão e Retenção, Momento Alegria, Bíblia Intelecto, Professores de Rebanho e Recepção (novos setores na aba Equipe).
+- Crianças: lista e ficha da criança com botão Imprimir (papel sem menu, botões e formulários).
+  Perfil Bíblia Intelecto vê na lista só as notas das provas (sem frequência, versículos e meditação).
 - Painel: seletores Kids/Infantil, seção e rebanho no topo, logo seguidos dos cards; gráficos por mês de frequência
   (Kids e culto) e de entregas (meditações completas e versículos decorados do máximo); aniversariantes, crianças que precisam de atenção (Kids < 75% ou 3 faltas seguidas), ranking de versículos.
 - **Cronograma** (pastores): datas do ano, tema, versículo e pontos, meditação, desafios e premiação.

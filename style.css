@@ -153,3 +153,19 @@ input.nota { width: 5rem; }
 .tabela.cronograma .sala { min-width: 130px; background: #f6faf8; }
 
 .filtros { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1rem; }
+
+/* Impressão: só o conteúdo, sem menu, botões e formulários */
+.titulo-acoes { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; }
+.so-impressao { display: none; }
+@media print {
+  .topo, .nao-imprime, form, .aviso { display: none !important; }
+  .so-impressao { display: block; font-size: .8rem; color: #555; margin: 0 0 .25rem; }
+  body { background: #fff; }
+  main { padding: 0; max-width: none; }
+  .card, .info { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+  .rolar { overflow: visible; }
+  .tabela tr { break-inside: avoid; }
+  .tabela th, .tabela td { padding: .3rem .4rem; font-size: .8rem; }
+  a { color: inherit; text-decoration: none; }
+  h2 { break-after: avoid; }
+}
