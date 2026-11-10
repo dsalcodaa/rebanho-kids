@@ -14,24 +14,25 @@ const ganhadores = (id) => {
 test('gráficos de meditação e versículos somam o resumo da criança', () => {
   const ana = porNome('ANA');
   const soma = (t) => entregasPorMes(db, [ana], t).reduce((s, m) => s + m.presencas, 0);
-  assert.equal(soma('m'), 27);
-  assert.equal(soma('v'), 99);
+  assert.equal(soma('m'), 33);
+  assert.equal(soma('v'), 117);
 });
 
 test('totais batem com o RESUMO da planilha', () => {
   const ana = resumoCrianca(db.registros[porNome('ANA').id]);
-  assert.equal(ana.kids.presencas, 29);
-  assert.equal(ana.versiculos, 99);
-  assert.equal(ana.meditacoes.completas, 27); // 26 OK + 1 MI-OK
+  assert.equal(ana.kids.presencas, 35);
+  assert.equal(ana.versiculos, 117);
+  assert.equal(ana.meditacoes.completas, 33); // inclui 1 MI-OK
   const arao = resumoCrianca(db.registros[porNome('AR').id]);
   assert.equal(arao.atrasos, 5);
-  assert.equal(arao.kids.presencas, 22); // 17 P + 5 A
+  assert.equal(arao.kids.presencas, 25); // 20 P + 5 A
 });
 
 test('falta justificada conta como presença', () => {
   const m = resumoCrianca(db.registros[porNome('MANUELA').id]);
-  assert.equal(m.kids.presencas, 28); // 26 P + 2 FJ
-  assert.equal(m.kids.total, 29);
+  assert.equal(m.faltasJustificadas, 4);
+  assert.equal(m.kids.presencas, 35); // as 4 FJ contam
+  assert.equal(m.kids.total, 35);
 });
 
 test('versículos exigidos = soma dos máximos das semanas', () => {
@@ -40,11 +41,12 @@ test('versículos exigidos = soma dos máximos das semanas', () => {
   assert.equal(versiculosDoDesafio(db, db.desafios[2]), 24);
 });
 
-test('TOP 3 vai de 06/09 a 18/10 e segue em andamento sem os lançamentos de outubro', () => {
+test('TOP 3 vai de 06/09 a 18/10 e fecha com os lançamentos de outubro', () => {
   const d = db.desafios.find((x) => x.nome === 'TOP 3');
   assert.equal(d.semanas, 7);
   assert.equal(db.encontros.find((e) => e.id === d.inicio).data, '2026-09-06');
-  assert.equal(avaliarDesafio(db, d, porNome('HÉLIO')).status, 'andamento');
+  assert.equal(avaliarDesafio(db, d, porNome('HÉLIO')).status, 'top');
+  assert.deepEqual(ganhadores('d4'), ['ANA', 'GABRIEL', 'HÉLIO', 'MANUELA', 'PEDRO']);
 });
 
 test('médias de provas ignoram notas não lançadas', () => {
@@ -118,7 +120,7 @@ test('frequência por mês soma as crianças', () => {
 
 test('crianças que precisam de atenção', () => {
   assert.deepEqual(motivosAtencao(db, porNome('ANA')), []);
-  assert.match(motivosAtencao(db, porNome('LORENZO')).join(), /frequência no Kids de 27%/);
+  assert.match(motivosAtencao(db, porNome('LORENZO')).join(), /frequência no Kids de 18%/);
   assert.match(motivosAtencao(db, porNome('JULIANA')).join(), /3 últimas faltas seguidas/);
 });
 
